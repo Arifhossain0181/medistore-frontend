@@ -3,11 +3,12 @@
 
 import { authClient } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authstore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const setUser = useAuthStore((s) => s.setUser);
 
   const [email, setemail] = useState("");
@@ -34,13 +35,30 @@ export default function LoginForm() {
           role: (user.role || 'CUSTOMER') as 'ADMIN' | 'SELLER' | 'CUSTOMER',
         };
         
+        console.log("Login successful:", userData);
+        console.log("User ID:", userData.id);
+        console.log("User Name:", userData.name);
+        console.log("User Email:", userData.email);
+        console.log("User Role:", userData.role);
+        
         setUser(userData);
         
-        if (userData.role === "ADMIN") router.push("/admin/dashboard");
-        else if (userData.role === "SELLER") router.push("/seller/dashboard");
-        else router.push("/");
+        // Get redirect URL from query params or use default based on role
+        const redirectTo = searchParams.get("redirect");
+        
+        if (redirectTo) {
+          console.log("Redirecting to:", redirectTo);
+          router.push(redirectTo);
+        } else if (userData.role === "ADMIN") {
+          router.push("/admin/dashboard");
+        } else if (userData.role === "SELLER") {
+          router.push("/seller/dashboard");
+        } else {
+          router.push("/");
+        }
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
