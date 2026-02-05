@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Home,
@@ -11,7 +11,7 @@ import {
   Users,
   LayoutDashboard,
   PlusCircle,
-} from "lucide-react"
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -24,51 +24,51 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useAuthStore } from "@/store/authstore"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/sidebar";
+import { useAuthStore } from "@/store/authstore";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Menu items based on user role
 const customerMenuItems = [
-  { title: "Dashboard", url: "/customer/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
   { title: "Cart", url: "/dashboard/cart", icon: ShoppingCart },
   { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
   { title: "My Orders", url: "/customer/orders", icon: Package },
   { title: "Profile", url: "/customer/profile", icon: User },
-]
+];
 
 const sellerMenuItems = [
-  { title: "Dashboard", url: "/seller/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "My Products", url: "/seller/products", icon: Package },
   { title: "Add Product", url: "/seller/products/add", icon: PlusCircle },
   { title: "Orders", url: "/seller/orders", icon: FileText },
   { title: "Profile", url: "/seller/profile", icon: User },
-]
+];
 
 const adminMenuItems = [
-  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Medicines", url: "/admin/medicines", icon: Package },
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Categories", url: "/admin/categories", icon: Settings },
-]
+];
 
 export function AppSidebar() {
-  const user = useAuthStore((s) => s.user)
-  const router = useRouter()
+  const user = useAuthStore((s) => s.user);
+  const router = useRouter();
 
   // Determine which menu items to show based on role
-  let menuItems = customerMenuItems
-  let dashboardTitle = "Customer Dashboard"
-  
+  let menuItems = customerMenuItems;
+  let dashboardTitle = "Customer Dashboard";
+
   if (user?.role === "SELLER") {
-    menuItems = sellerMenuItems
-    dashboardTitle = "Seller Dashboard"
+    menuItems = sellerMenuItems;
+    dashboardTitle = "Seller Dashboard";
   } else if (user?.role === "ADMIN") {
-    menuItems = adminMenuItems
-    dashboardTitle = "Admin Dashboard"
+    menuItems = adminMenuItems;
+    dashboardTitle = "Admin Dashboard";
   }
 
   return (
@@ -118,7 +118,9 @@ export function AppSidebar() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
               </div>
             </div>
             <div className="px-2 py-1 rounded-md bg-muted text-xs text-center">
@@ -128,5 +130,5 @@ export function AppSidebar() {
         )}
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
