@@ -1,10 +1,11 @@
 "use client";
 
 
-import { authClient } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authstore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -13,21 +14,20 @@ export default function LoginForm() {
 
   const [email, setemail] = useState("");
     const [password, setpassword] = useState("");
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
     try {
-      const res = await authClient.signIn.email({
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+        { email, password },
+        { withCredentials: true }
+      );
       
-      if (res.data) {
-        const user = res.data.user as typeof res.data.user & { role?: 'ADMIN' | 'SELLER' | 'CUSTOMER' };
+      if (res.data && res.data.user) {
+        const user = res.data.user;
         const userData = {
           id: user.id,
           name: user.name,
@@ -43,6 +43,8 @@ export default function LoginForm() {
         
         setUser(userData);
         
+        toast.success("Login successful! Welcome back, " + userData.name);
+        
         // Get redirect URL from query params or use default based on role
         const redirectTo = searchParams.get("redirect");
         
@@ -50,23 +52,25 @@ export default function LoginForm() {
           console.log("Redirecting to:", redirectTo);
           router.push(redirectTo);
         } else if (userData.role === "ADMIN") {
-          router.push("/admin/dashboard");
+          router.push("/");
         } else if (userData.role === "SELLER") {
-          router.push("/seller/dashboard");
+          router.push("/");
         } else {
           router.push("/");
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const errorMessage = axios.isAxiosError(err) 
+        ? err.response?.data?.message || err.message 
+        : "Something went wrong";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
   return (
     <form onSubmit={handleLogin} className="flex flex-col gap-4">
-      {error && <p className="text-red-500">{error}</p>}
       <input
         type="email"
         placeholder="email"
@@ -81,7 +85,7 @@ export default function LoginForm() {
         className="input"
         required
       />
-      <button className="btn-primary w-full" disabled={loading}>{loading ? "logging in..." : "login"} </button>
+      <button className="btn-primary w-full" disabled={loading}>{loading ? "Logging in..." : "Login"} </button>
     </form>
   );
 }

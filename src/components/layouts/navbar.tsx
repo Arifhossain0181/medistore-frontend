@@ -1,9 +1,12 @@
 "use client";
 
-import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Book, Menu, Sunset, Trees, Zap, LogOut } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-
+import { useAuthStore } from "@/store/authstore";
+import { toast } from "sonner";
+import axios from "axios";
+import  dashboard  from "@/app/dashboard/page";
 import { cn } from "@/lib/utils";
 
 import {
@@ -84,6 +87,11 @@ const Navbar = ({
       url: "/cart",
     },
     
+    {
+      title: "dashboard",
+      url: "/dashboard",
+    },
+    
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -92,9 +100,32 @@ const Navbar = ({
   className,
 }: Navbar1Props) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  
   const loginUrl = pathname && pathname !== "/login" && pathname !== "/signup" 
     ? `${auth.login.url}?redirect=${encodeURIComponent(pathname)}` 
     : auth.login.url;
+  
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/logout`,
+        {},
+        { withCredentials: true }
+      );
+      logout();
+      toast.success("Logged out successfully");
+      router.push("/");
+    } catch (err: unknown) {
+      console.error("Logout error:", err);
+      // Clear user anyway even if API call fails
+      logout();
+      toast.success("Logged out successfully");
+      router.push("/");
+    }
+  };
     
   return (
     <section className={cn("py-4", className)}>
@@ -123,12 +154,24 @@ const Navbar = ({
           </div>
           <div className="flex gap-2 items-center">
             <ModeToggle />
-            <Button asChild variant="outline" size="sm">
-              <Link href={loginUrl}>{auth.login.title}</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href={auth.signup.url}>{auth.signup.title}</Link>
-            </Button>
+            {user ? (
+              <>
+                <span className="text-sm font-medium hidden md:inline">Welcome, {user.name}</span>
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="size-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={loginUrl}>{auth.login.title}</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -172,12 +215,24 @@ const Navbar = ({
 
                   <div className="flex flex-col gap-3">
                     <ModeToggle></ModeToggle>
-                    <Button asChild variant="outline">
-                      <Link href={loginUrl}>{auth.login.title}</Link>
-                    </Button>
-                    <Button asChild>
-                      <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                    </Button>
+                    {user ? (
+                      <>
+                        <div className="text-sm font-medium py-2">Welcome, {user.name}</div>
+                        <Button onClick={handleLogout} variant="outline">
+                          <LogOut className="size-4 mr-2" />
+                          Logout
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button asChild variant="outline">
+                          <Link href={loginUrl}>{auth.login.title}</Link>
+                        </Button>
+                        <Button asChild>
+                          <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </SheetContent>

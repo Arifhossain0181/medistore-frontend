@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layouts/Navbar";
+import { ConditionalNavbar } from "@/components/layouts/ConditionalNavbar";
 import { ThemeProvider } from "@/Providers/theme.Provider";
-import { Footer2 } from "@/components/layouts/footer2";
+import { ConditionalFooter } from "@/components/layouts/ConditionalFooter";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-             <Navbar></Navbar>
+             <ConditionalNavbar />
         {children}
-        <Footer2></Footer2>
+        <ConditionalFooter />
+        <Toaster richColors />
           </ThemeProvider>
        
       </body>

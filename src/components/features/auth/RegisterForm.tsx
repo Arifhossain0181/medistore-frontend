@@ -2,22 +2,35 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/api/auth";
+import * as z from "zod";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function RegisterForm() {
+    const formSchema = z.object({
+        name: z.string().min(1, "Name is required"),
+        email: z.email("Invalid email address"),
+        phone: z.string().optional(),
+        password: z.string().min(6, "Password must be at least 6 characters"),
+        role: z.enum(["CUSTOMER", "SELLER"])
+    });
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
     const [form, setForm] = useState({
         name: "",
         email: "",
         phone: "",
         password: "",
-        role: "CUSTOMER"
+        role: "CUSTOMER" as "CUSTOMER" | "SELLER"
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setForm({
+            ...form,
+            [e.target.name]: e.target.value
+            
+        });
+        console.log("Form state updated:", {
             ...form,
             [e.target.name]: e.target.value
         });
@@ -26,16 +39,35 @@ export default function RegisterForm() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
-        setError("");
+        
         try {
-            await authClient.signUp.email({
-                email: form.email,
-                name: form.name,
-                password: form.password,
-            });
+            // Validate form data with Zod
+            const validatedData = formSchema.parse(form);
+            
+            await axios.post(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`,
+                {
+                    email: validatedData.email,
+                    name: validatedData.name,
+                    password: validatedData.password,
+                    phone: validatedData.phone,
+                    role: validatedData.role
+                },
+                { withCredentials: true }
+            );
+            
+            toast.success("Registration successful! Redirecting to login...");
             router.push("/auth/login");
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Something went wrong");
+        } catch (err: unknown) {
+            if (err instanceof z.ZodError) {
+                // Handle Zod validation errors
+                toast.error(err.issues.map(e => e.message).join(", "));
+            } else {
+                const errorMessage = axios.isAxiosError(err)
+                    ? err.response?.data?.message || err.message
+                    : "Something went wrong";
+                toast.error(errorMessage);
+            }
         } finally {
             setLoading(false);
         }
@@ -43,8 +75,6 @@ export default function RegisterForm() {
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {error && <p className="text-red-500">{error}</p>}
-            
             <input 
                 name="name" 
                 placeholder="Name" 
