@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/authstore";
 import { toast } from "sonner";
 import axios from "axios";
-import  dashboard  from "@/app/dashboard/page";
 import { cn } from "@/lib/utils";
 
 import {
@@ -86,12 +85,6 @@ const Navbar = ({
       title: "Cart",
       url: "/cart",
     },
-    
-    {
-      title: "dashboard",
-      url: "/dashboard",
-    },
-    
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -103,6 +96,11 @@ const Navbar = ({
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  
+  // Show dashboard menu only when user is logged in
+  const menuItems = user 
+    ? [...menu, { title: "Dashboard", url: "/dashboard" }]
+    : menu;
   
   const loginUrl = pathname && pathname !== "/login" && pathname !== "/signup" 
     ? `${auth.login.url}?redirect=${encodeURIComponent(pathname)}` 
@@ -147,7 +145,7 @@ const Navbar = ({
             <div className="flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>
-                  {menu.map((item) => renderMenuItem(item))}
+                  {menuItems.map((item) => renderMenuItem(item))}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
@@ -210,7 +208,7 @@ const Navbar = ({
                     collapsible
                     className="flex w-full flex-col gap-4"
                   >
-                    {menu.map((item) => renderMobileMenuItem(item))}
+                    {menuItems.map((item) => renderMobileMenuItem(item))}
                   </Accordion>
 
                   <div className="flex flex-col gap-3">

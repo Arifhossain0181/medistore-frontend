@@ -33,7 +33,7 @@ import { useRouter } from "next/navigation";
 const customerMenuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
-  { title: "Cart", url: "/dashboard/cart", icon: ShoppingCart },
+  { title: "Carts", url: "/customer/carts", icon: ShoppingCart },
   { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
   { title: "My Orders", url: "/customer/orders", icon: Package },
   { title: "Profile", url: "/customer/profile", icon: User },
@@ -53,6 +53,7 @@ const adminMenuItems = [
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Categories", url: "/admin/categories", icon: Settings },
+  { title: "User Status", url: "/admin/userstatus", icon: Settings },
 ];
 
 export function AppSidebar() {
