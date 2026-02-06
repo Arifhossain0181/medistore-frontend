@@ -1,12 +1,14 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { getSingleMedicine } from "@/lib/api/medicine"
+import { getSingleMedicine, incrementViewCount } from "@/lib/api/medicine"
 import { Button } from "@/nextjs/ui/button"
 import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import { ShoppingCart, Eye } from "lucide-react"
+import { toast } from "sonner"
+import { useCartStore } from "@/store/cartstore"
 
 type Medicine = {
   id: string
@@ -14,26 +16,88 @@ type Medicine = {
   description: string
   price: number
   manufacturer: string
-  category: string
+  category: {
+    id: string
+    name: string
+  } | string  // Can be object (from backend with include) or string
   imageUrl?: string
+  stock?: number
+  viewCount?: number
 }
 export default function Mediasingle(){
     const {id} = useParams()
+    const router = useRouter()
     const [medicine, setMedicine] = useState<Medicine | null>(null)
+    const { addToCart, getItemQuantity } = useCartStore()
+    
+    // Calculate available stock based on cart quantity
+    const availableStock = medicine && medicine.stock !== undefined 
+      ? Math.max(0, medicine.stock - getItemQuantity(medicine.id))
+      : 0
+
+    const handleAddToCart = () => {
+      if (!medicine) return
+      if (availableStock === 0) {
+        toast.error("This medicine is out of stock")
+        return
+      }
+      
+      // Validate required fields
+      if (!medicine.price || !medicine.name) {
+        console.error("Invalid medicine data:", medicine)
+        toast.error("Cannot add item: Missing required data")
+        return
+      }
+
+      addToCart({
+        id: medicine.id,
+        name: medicine.name,
+        price: medicine.price,
+        manufacturer: medicine.manufacturer,
+        imageUrl: medicine.imageUrl,
+        stock: medicine.stock,
+      })
+
+      toast.success(`${medicine.name} added to cart!`, {
+        description: "Go to cart to checkout",
+        action: {
+          label: "View Cart",
+          onClick: () => router.push("/cart"),
+        },
+      })
+    }
     
 
-    useEffect(() => {
-        async function loaddata(){
-            try{
-                const data = await getSingleMedicine(id as string)
-                setMedicine(data)
-                console.log(data)
-            } catch(err){
-                console.error("Error fetching medicine:", err)
-            }
+  useEffect(() => {
+    async function loaddata() {
+      try {
+        const data = await getSingleMedicine(id as string)
+        setMedicine(data)
+
+        // Check if this product has been viewed before in this session
+        const viewedKey = `medicine_viewed_${id}`
+        const hasViewed = sessionStorage.getItem(viewedKey)
+        
+        if (!hasViewed) {
+          console.log(" First time viewing this product, incrementing count...")
+          const success = await incrementViewCount(id as string)
+          
+          if (success) {
+            // Mark as viewed in session storage to prevent duplicate counts
+            sessionStorage.setItem(viewedKey, "true")
+            console.log(" View count recorded")
+          } else {
+            console.warn(" Backend view count failed - check if endpoint exists")
+          }
+        } else {
+          console.log(" Product already viewed in this session")
         }
-        loaddata()
-    },[id])
+      } catch (err) {
+        console.error("Error fetching medicine:", err)
+      }
+    }
+    loaddata()
+  }, [id])
     return (
          <section className="container mx-auto px-4 py-10">
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -50,16 +114,54 @@ export default function Mediasingle(){
 
         {/* INFO */}
         <div className="space-y-4">
-          <Badge>{medicine?.category}</Badge>
+          <Badge>{typeof medicine?.category === 'object' ? medicine?.category?.name : medicine?.category}</Badge>
 
           <h1 className="text-3xl font-bold">{medicine?.name}</h1>
 
           <p className="text-muted-foreground">{medicine?.description}</p>
-          <p className="text-xl font-semibold ">$ {medicine?.price}</p>
+          
+          <div className="space-y-2">
+            <p className="text-2xl font-semibold text-primary">$ {(medicine?.price || 0).toFixed(2)}</p>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              {medicine?.stock !== undefined && (
+                <Badge 
+                  variant={
+                    availableStock === 0 
+                      ? "destructive" 
+                      : availableStock <= 10 
+                      ? "default" 
+                      : "outline"
+                  }
+                >
+                  {availableStock > 0 
+                    ? `${availableStock} in stock` 
+                    : "Out of Stock"}
+                </Badge>
+              )}
+              {medicine?.manufacturer && (
+                <span className="text-sm text-muted-foreground">
+                  by {medicine.manufacturer}
+                </span>
+              )}
+              {medicine?.viewCount !== undefined && (
+                <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Eye className="h-4 w-4" />
+                  {medicine.viewCount} views
+                </span>
+              )}
+            </div>
+          </div>
 
-          <Link href="/cart" className="inline-block">
-            <Button size="lg">Add to cart</Button>
-          </Link>
+          <Button 
+            size="lg" 
+            onClick={handleAddToCart}
+            disabled={!medicine || availableStock === 0}
+            className="gap-2 w-full sm:w-auto"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {availableStock === 0 ? "Out of Stock" : "Add to cart"}
+          </Button>
         </div>
       </div>
     </section>

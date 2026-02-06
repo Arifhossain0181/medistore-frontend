@@ -1,7 +1,8 @@
 "use client";
 
-import { Book, Menu, Sunset, Trees, Zap, LogOut } from "lucide-react";
+import { Menu, LogOut, ShoppingCart } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authstore";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ModeToggle } from "./modetoggle";
+import { useCartStore } from "@/store/cartstore";
 
 interface MenuItem {
   title: string;
@@ -96,6 +98,26 @@ const Navbar = ({
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const getTotalItems = useCartStore((s) => s.getTotalItems);
+  
+  // Prevent hydration mismatch by only showing cart count after mount
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // Client-side only initialization - standard Next.js pattern
+  useEffect(() => {
+    setIsMounted(true);
+    setCartItemCount(getTotalItems());
+    
+    // Subscribe to cart changes
+    const unsubscribe = useCartStore.subscribe((state) => {
+      setCartItemCount(state.getTotalItems());
+    });
+    
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   
   // Show dashboard menu only when user is logged in
   const menuItems = user 
@@ -152,6 +174,19 @@ const Navbar = ({
           </div>
           <div className="flex gap-2 items-center">
             <ModeToggle />
+            
+            {/* Cart Button */}
+            <Link href="/cart">
+              <Button variant="outline" size="sm" className="relative">
+                <ShoppingCart className="size-4" />
+                {isMounted && cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center font-bold">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+
             {user ? (
               <>
                 <span className="text-sm font-medium hidden md:inline">Welcome, {user.name}</span>
@@ -184,6 +219,19 @@ const Navbar = ({
                 alt={logo.alt}
               />
             </Link>
+            <div className="flex items-center gap-2">
+              <ModeToggle />
+              <Link href="/cart">
+                <Button variant="outline" size="icon" className="relative">
+                  <ShoppingCart className="size-4" />
+                  {isMounted && cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center font-bold">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+            
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -235,6 +283,7 @@ const Navbar = ({
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
         </div>
       </div>

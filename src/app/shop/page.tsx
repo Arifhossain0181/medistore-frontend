@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { HeartIcon } from 'lucide-react'
-
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { HeartIcon, EyeIcon, PackageIcon, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -14,70 +14,113 @@ import {
   CardTitle,
   CardFooter,
   CardContent,
-} from '@/nextjs/ui/card'
+} from "@/nextjs/ui/card";
 
-import { cn } from '@/lib/utils'
-import { getAllMedicines } from '@/lib/api/medicine'
+import { cn } from "@/lib/utils";
+import { getAllMedicines } from "@/lib/api/medicine";
+import { useCartStore } from "@/store/cartstore";
 
 type Medicine = {
-  id: string
-  name: string
-  description: string
-  price: number
-  manufacturer: string
-  imageUrl?: string
-  stock?: number
-}
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  manufacturer: string;
+  imageUrl?: string;
+  stock?: number;
+  viewCount?: number;
+};
 
 const ShopPage = () => {
-  const [medicines, setMedicines] = useState<Medicine[]>([])
-  const [likedId, setLikedId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const addToCart = useCartStore((s) => s.addToCart)
+  const getItemQuantity = useCartStore((s) => s.getItemQuantity)
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [likedId, setLikedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  
+  // Calculate available stock based on cart quantity
+  const getAvailableStock = (med: Medicine) => {
+    const cartQty = getItemQuantity(med.id)
+    const totalStock = med.stock || 0
+    return Math.max(0, totalStock - cartQty)
+  }
+  
+  const handleAddtoCart = (med: Medicine) => {
+    const availableStock = getAvailableStock(med)
+    
+    if (availableStock === 0) {
+      toast.error("This medicine is out of stock")
+      return
+    }
+    
+    // Validate required fields
+    if (!med.price || !med.name) {
+      console.error("Invalid medicine data:", med)
+      toast.error("Cannot add item: Missing required data")
+      return
+    }
+  
+    addToCart({ 
+      id: med.id, 
+      name: med.name, 
+      price: med.price, 
+      manufacturer: med.manufacturer, 
+      imageUrl: med.imageUrl, 
+      stock: med.stock,
+    })
+  
+    toast.success(`${med.name} added to cart!`, {
+      description: "Go to cart to checkout",
+    })
+  }
 
- 
   useEffect(() => {
     async function loadMedicines() {
       try {
-        const data = await getAllMedicines()
-        console.log("Medicines data:", data)
-        
+        const data = await getAllMedicines();
+        console.log("Medicines data:", data);
+
         // Handle different response structures
         if (data && data.data) {
-          setMedicines(data.data)
+          setMedicines(data.data);
         } else if (Array.isArray(data)) {
-          setMedicines(data)
+          setMedicines(data);
         }
       } catch (err) {
-        console.error('Failed to load medicines:', err)
-        setError('Failed to load medicines')
+        console.error("Failed to load medicines:", err);
+        setError("Failed to load medicines");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    loadMedicines()
-  }, [])
-
+    loadMedicines();
+  }, []);
 
   if (loading) {
-    return <p className="text-center py-10 text-lg">Loading medicines...</p>
+    return <p className="text-center py-10 text-lg">Loading medicines...</p>;
   }
 
   if (error) {
-    return <p className="text-center text-red-500 py-10 text-lg">{error}</p>
+    return <p className="text-center text-red-500 py-10 text-lg">{error}</p>;
   }
 
   if (medicines.length === 0) {
-    return <p className="text-center py-10 text-lg text-gray-500">No medicines available</p>
+    return (
+      <p className="text-center py-10 text-lg text-gray-500">
+        No medicines available
+      </p>
+    );
   }
 
- 
   return (
     <section className="px-4 py-10">
       <div className="mb-8">
         <h1 className="text-4xl font-bold">Shop Medicines</h1>
-        <p className="text-gray-600 mt-2">Browse our collection ({medicines.length} items)</p>
+        <p className="text-gray-600 mt-2">
+          Browse our collection ({medicines.length} items)
+        </p>
       </div>
 
       <div
@@ -89,7 +132,9 @@ const ShopPage = () => {
           xl:grid-cols-4
         "
       >
-        {medicines.map((med) => (
+        {medicines.map((med) => {
+          const availableStock = getAvailableStock(med)
+          return (
           <div
             key={med.id}
             className="relative rounded-xl bg-gradient-to-r from-neutral-700 to-violet-400 shadow-lg hover:shadow-xl transition-shadow"
@@ -103,8 +148,8 @@ const ShopPage = () => {
               <HeartIcon
                 className={cn(
                   likedId === med.id
-                    ? 'fill-red-500 stroke-red-500'
-                    : 'stroke-black'
+                    ? "fill-red-500 stroke-red-500"
+                    : "stroke-black",
                 )}
               />
             </Button>
@@ -112,8 +157,8 @@ const ShopPage = () => {
             {/* IMAGE */}
             <Link href={`/shop/${med.id}`}>
               <div className="flex h-56 items-center justify-center bg-white rounded-t-xl cursor-pointer hover:opacity-90 transition-opacity">
-                <Image 
-                  src={med.imageUrl || '/placeholder.png'}
+                <Image
+                  src={med.imageUrl || "/placeholder.png"}
                   alt={med.name}
                   width={160}
                   height={160}
@@ -133,17 +178,37 @@ const ShopPage = () => {
                 <CardDescription className="flex gap-2 flex-wrap">
                   <Badge variant="outline">{med.manufacturer}</Badge>
                   {med.stock !== undefined && (
-                    <Badge variant={med.stock > 0 ? "outline" : "destructive"}>
-                      {med.stock > 0 ? `Stock: ${med.stock}` : 'Out of Stock'}
+                    <Badge variant={availableStock > 0 ? "outline" : "destructive"}>
+                      {availableStock > 0 ? `Stock: ${availableStock}` : "Out of Stock"}
                     </Badge>
                   )}
                 </CardDescription>
               </CardHeader>
 
               <CardContent>
-                <p className="line-clamp-2 text-sm text-muted-foreground">
+                <p className="line-clamp-2 text-sm text-muted-foreground mb-3">
                   {med.description}
                 </p>
+                {/* View Count and Stock Info */}
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <EyeIcon className="h-4 w-4" />
+                    <span>{med.viewCount || 0} views</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <PackageIcon className="h-4 w-4" />
+                    <span
+                      className={cn(
+                        "font-medium",
+                        availableStock === 0 && "text-red-500",
+                        availableStock > 0 && availableStock <= 10 && "text-orange-500",
+                        availableStock > 10 && "text-green-600",
+                      )}
+                    >
+                      {availableStock} in stock
+                    </span>
+                  </div>
+                </div>
               </CardContent>
 
               <CardFooter className="flex items-center justify-between gap-3">
@@ -151,21 +216,27 @@ const ShopPage = () => {
                   <p className="text-xs uppercase text-muted-foreground">
                     Price
                   </p>
-                  <p className="text-lg font-semibold">৳ {med.price.toFixed(2)}</p>
+                  <p className="text-lg font-semibold">
+                    $ {med.price.toFixed(2)}
+                  </p>
                 </div>
 
-                <Link href="/cart">
-                  <Button disabled={med.stock === 0}>
-                    {med.stock === 0 ? 'Out of Stock' : 'Add to cart'}
-                  </Button>
-                </Link>
+                <Button 
+                  disabled={availableStock === 0}
+                  onClick={() => handleAddtoCart(med)}
+                  className="gap-2"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  {availableStock === 0 ? "Out of Stock" : "Add to cart"}
+                </Button>
               </CardFooter>
             </Card>
           </div>
-        ))}
+          )
+        })}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default ShopPage
+export default ShopPage;
