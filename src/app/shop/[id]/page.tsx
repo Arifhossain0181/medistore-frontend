@@ -21,26 +21,16 @@ type Medicine = {
     name: string
   } | string  // Can be object (from backend with include) or string
   imageUrl?: string
-  stock?: number
   viewCount?: number
 }
 export default function Mediasingle(){
     const {id} = useParams()
     const router = useRouter()
     const [medicine, setMedicine] = useState<Medicine | null>(null)
-    const { addToCart, getItemQuantity } = useCartStore()
-    
-    // Calculate available stock based on cart quantity
-    const availableStock = medicine && medicine.stock !== undefined 
-      ? Math.max(0, medicine.stock - getItemQuantity(medicine.id))
-      : 0
+    const { addToCart } = useCartStore()
 
     const handleAddToCart = () => {
       if (!medicine) return
-      if (availableStock === 0) {
-        toast.error("This medicine is out of stock")
-        return
-      }
       
       // Validate required fields
       if (!medicine.price || !medicine.name) {
@@ -55,7 +45,6 @@ export default function Mediasingle(){
         price: medicine.price,
         manufacturer: medicine.manufacturer,
         imageUrl: medicine.imageUrl,
-        stock: medicine.stock,
       })
 
       toast.success(`${medicine.name} added to cart!`, {
@@ -124,21 +113,6 @@ export default function Mediasingle(){
             <p className="text-2xl font-semibold text-primary">$ {(medicine?.price || 0).toFixed(2)}</p>
             
             <div className="flex flex-wrap items-center gap-2">
-              {medicine?.stock !== undefined && (
-                <Badge 
-                  variant={
-                    availableStock === 0 
-                      ? "destructive" 
-                      : availableStock <= 10 
-                      ? "default" 
-                      : "outline"
-                  }
-                >
-                  {availableStock > 0 
-                    ? `${availableStock} in stock` 
-                    : "Out of Stock"}
-                </Badge>
-              )}
               {medicine?.manufacturer && (
                 <span className="text-sm text-muted-foreground">
                   by {medicine.manufacturer}
@@ -156,11 +130,11 @@ export default function Mediasingle(){
           <Button 
             size="lg" 
             onClick={handleAddToCart}
-            disabled={!medicine || availableStock === 0}
+            disabled={!medicine}
             className="gap-2 w-full sm:w-auto"
           >
             <ShoppingCart className="h-5 w-5" />
-            {availableStock === 0 ? "Out of Stock" : "Add to cart"}
+            Add to cart
           </Button>
         </div>
       </div>

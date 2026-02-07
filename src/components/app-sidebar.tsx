@@ -28,32 +28,36 @@ import {
 import { useAuthStore } from "@/store/authstore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { title } from "process";
 
 // Menu items based on user role
 const customerMenuItems = [
+    {title: "Home", url: "/", icon: LayoutDashboard },
+
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
   { title: "Carts", url: "/customer/carts", icon: ShoppingCart },
   { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
-  { title: "My Orders", url: "/customer/orders", icon: Package },
+  { title: "My Orders", url: "/customer/myorders", icon: Package },
   { title: "Profile", url: "/customer/profile", icon: User },
 ];
 
 const sellerMenuItems = [
+    {title: "Home", url: "/", icon: LayoutDashboard },
+
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "My Products", url: "/seller/products", icon: Package },
-  { title: "Add Product", url: "/seller/products/add", icon: PlusCircle },
+  { title: "Manage Medicines", url: "/seller/medicines", icon: Package },
+  { title: "Add Medicine", url: "/seller/medicines/add", icon: PlusCircle },
   { title: "Orders", url: "/seller/orders", icon: FileText },
-  { title: "Profile", url: "/seller/profile", icon: User },
 ];
 
 const adminMenuItems = [
+  {title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Medicines", url: "/admin/medicines", icon: Package },
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Categories", url: "/admin/categories", icon: Settings },
-  { title: "User Status", url: "/admin/userstatus", icon: Settings },
 ];
 
 export function AppSidebar() {

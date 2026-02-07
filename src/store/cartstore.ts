@@ -8,13 +8,15 @@ export type CartItem ={
     quantity: number;
     manufacturer: string;
     imageUrl?: string;
-    stock?: number;
     viewCount?: number;
     description?: string;
 }
 
 type CartState ={
     items: CartItem[];
+    userId: string | null;
+    userCarts: Record<string, CartItem[]>; // Store separate cart for each user
+    setUserId: (userId: string | null) => void;
     addToCart:(item:Omit<CartItem, 'quantity'>) => void;
     removeFromCart:(id:string) => void;
     incrementQuantity:(id:string) => void;
@@ -30,6 +32,35 @@ export const useCartStore = create<CartState>()(
     persist(
         (set ,get) => ({
     items:[],
+    userId: null,
+    userCarts: {}, // Initialize empty object to store each user's cart
+
+    setUserId: (userId) => {
+        const currentUserId = get().userId;
+        
+        // Save current cart to the current user before switching
+        if (currentUserId) {
+            const currentItems = get().items;
+            set((state) => ({
+                userCarts: {
+                    ...state.userCarts,
+                    [currentUserId]: currentItems
+                }
+            }));
+        }
+        
+        // Load cart for the new user
+        // If userId is null (logout), keep current items visible
+        // If userId is different, load that user's cart
+        if (userId === null) {
+            set({ userId: null }); // Just update userId, keep items
+        } else if (currentUserId !== userId) {
+            const newUserCart = get().userCarts[userId] || [];
+            set({ userId, items: newUserCart });
+        } else {
+            set({ userId });
+        }
+    },
 
     addToCart: (item) => {
         const existing = get().items.find((i)=>i.id === item.id);

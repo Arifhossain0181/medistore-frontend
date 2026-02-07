@@ -2,6 +2,7 @@
 
 
 import { useAuthStore } from "@/store/authstore";
+import { useCartStore } from "@/store/cartstore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setUser = useAuthStore((s) => s.setUser);
+  const setUserId = useCartStore((s) => s.setUserId);
 
   const [email, setemail] = useState("");
     const [password, setpassword] = useState("");
@@ -42,6 +44,8 @@ export default function LoginForm() {
         console.log("User Role:", userData.role);
         
         setUser(userData);
+        // Sync cart with logged in user
+        setUserId(userData.id);
         
         toast.success("Login successful! Welcome back, " + userData.name);
         

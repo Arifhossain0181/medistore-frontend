@@ -5,16 +5,15 @@ import { Navbar } from "./Navbar";
 
 export function ConditionalNavbar() {
   const pathname = usePathname();
-  
-  // Hide navbar on dashboard routes
+  // Hide navbar on all admin, seller, customer routes
   const isDashboardRoute = pathname?.startsWith("/dashboard") || 
-                          pathname?.startsWith("/customer/dashboard") ||
-                          pathname?.startsWith("/seller/dashboard") ||
-                          pathname?.startsWith("/admin/dashboard");
-  
+    pathname?.startsWith("/customer") ||
+    pathname?.startsWith("/seller") ||
+    pathname?.startsWith("/admin");
+
   if (isDashboardRoute) {
     return null;
   }
-  
+
   return <Navbar />;
 }

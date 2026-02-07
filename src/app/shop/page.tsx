@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { HeartIcon, EyeIcon, PackageIcon, ShoppingCart } from "lucide-react";
+import { HeartIcon, EyeIcon, PackageIcon, ShoppingCart, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardHeader,
@@ -17,7 +18,7 @@ import {
 } from "@/nextjs/ui/card";
 
 import { cn } from "@/lib/utils";
-import { getAllMedicines } from "@/lib/api/medicine";
+import { getAllMedicines, getAllCategories } from "@/lib/api/medicine";
 import { useCartStore } from "@/store/cartstore";
 
 type Medicine = {
@@ -27,32 +28,72 @@ type Medicine = {
   price: number;
   manufacturer: string;
   imageUrl?: string;
-  stock?: number;
   viewCount?: number;
+  category?: {
+    id: string;
+    name: string;
+  } | string;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  description?: string;
 };
 
 const ShopPage = () => {
   const addToCart = useCartStore((s) => s.addToCart)
-  const getItemQuantity = useCartStore((s) => s.getItemQuantity)
   const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [likedId, setLikedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
-  // Calculate available stock based on cart quantity
-  const getAvailableStock = (med: Medicine) => {
-    const cartQty = getItemQuantity(med.id)
-    const totalStock = med.stock || 0
-    return Math.max(0, totalStock - cartQty)
-  }
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  useEffect(() => {
+    async function loadData(){
+      try{
+        const [meddata ,catadata] = await Promise.all([getAllMedicines(), getAllCategories()])
+
+        if(meddata && meddata.data){
+          setMedicines(meddata.data)
+        }
+        else if(Array.isArray(meddata)){
+          setMedicines(meddata)
+        }
+        if(catadata && catadata.data){
+          setCategories(catadata.data)
+        }
+        else if(Array.isArray(catadata)){
+          setCategories(catadata)
+        }
+      }
+      catch(error){
+        console.error("Failed to load data:", error)
+        setError("Failed to load data")
+      }
+      finally{
+        setLoading(false)
+      }
+    }
+    loadData();
+  }, [])
+  //filter medicines based on search and category
+  const filterMedicines = medicines.filter((med) => {
+    const matchesSearch = 
+      med.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      med.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      med.manufacturer.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const categoryName = typeof med.category === "object" ? med.category?.name : med.category;
+    const matchesCategory = 
+      selectedCategory === "all" || categoryName?.toLowerCase() === selectedCategory.toLowerCase();
+    
+    return matchesSearch && matchesCategory;
+  });
   
   const handleAddtoCart = (med: Medicine) => {
-    const availableStock = getAvailableStock(med)
-    
-    if (availableStock === 0) {
-      toast.error("This medicine is out of stock")
-      return
-    }
     
     // Validate required fields
     if (!med.price || !med.name) {
@@ -66,8 +107,7 @@ const ShopPage = () => {
       name: med.name, 
       price: med.price, 
       manufacturer: med.manufacturer, 
-      imageUrl: med.imageUrl, 
-      stock: med.stock,
+      imageUrl: med.imageUrl,
     })
   
     toast.success(`${med.name} added to cart!`, {
@@ -75,28 +115,7 @@ const ShopPage = () => {
     })
   }
 
-  useEffect(() => {
-    async function loadMedicines() {
-      try {
-        const data = await getAllMedicines();
-        console.log("Medicines data:", data);
 
-        // Handle different response structures
-        if (data && data.data) {
-          setMedicines(data.data);
-        } else if (Array.isArray(data)) {
-          setMedicines(data);
-        }
-      } catch (err) {
-        console.error("Failed to load medicines:", err);
-        setError("Failed to load medicines");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadMedicines();
-  }, []);
 
   if (loading) {
     return <p className="text-center py-10 text-lg">Loading medicines...</p>;
@@ -119,21 +138,96 @@ const ShopPage = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold">Shop Medicines</h1>
         <p className="text-gray-600 mt-2">
-          Browse our collection ({medicines.length} items)
+          Browse our collection ({filterMedicines.length} of {medicines.length} items)
         </p>
       </div>
+      {/* Search and Filter Section */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input 
+            type="text" 
+            placeholder="Search medicines by name, description, or manufacturer..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        {/* Category Filter */}
+        <div className="relative sm:w-64">
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <select 
+            value={selectedCategory} 
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-      <div
-        className="
-          grid gap-6
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-3
-          xl:grid-cols-4
-        "
-      >
-        {medicines.map((med) => {
-          const availableStock = getAvailableStock(med)
+      {/* Active Filters Display */}
+      {(searchTerm || selectedCategory !== "all") && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {searchTerm && (
+            <Badge variant="secondary" className="gap-1">
+              Search: {searchTerm}
+              <button
+                onClick={() => setSearchTerm("")}
+                className="ml-1 hover:text-destructive"
+              >
+                X
+              </button>
+            </Badge>
+          )}
+          {selectedCategory !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              Category: {selectedCategory}
+              <button
+                onClick={() => setSelectedCategory("all")}
+                className="ml-1 hover:text-destructive"
+              >
+                X
+              </button>
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedCategory("all");
+            }}
+            className="h-6 text-xs"
+          >
+            Clear all filters
+          </Button>
+        </div>
+      )}
+
+      {/* No Results Message */}
+      {filterMedicines.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-lg text-gray-500 mb-2">No medicines found</p>
+          <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
+        </div>
+      ) : (
+        <div
+          className="
+            grid gap-6
+            grid-cols-1
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-4
+          ">
+          {filterMedicines.map((med) => {
           return (
           <div
             key={med.id}
@@ -177,11 +271,6 @@ const ShopPage = () => {
                 </Link>
                 <CardDescription className="flex gap-2 flex-wrap">
                   <Badge variant="outline">{med.manufacturer}</Badge>
-                  {med.stock !== undefined && (
-                    <Badge variant={availableStock > 0 ? "outline" : "destructive"}>
-                      {availableStock > 0 ? `Stock: ${availableStock}` : "Out of Stock"}
-                    </Badge>
-                  )}
                 </CardDescription>
               </CardHeader>
 
@@ -189,24 +278,11 @@ const ShopPage = () => {
                 <p className="line-clamp-2 text-sm text-muted-foreground mb-3">
                   {med.description}
                 </p>
-                {/* View Count and Stock Info */}
+                {/* View Count */}
                 <div className="flex items-center gap-4 mt-2 text-sm">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <EyeIcon className="h-4 w-4" />
                     <span>{med.viewCount || 0} views</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <PackageIcon className="h-4 w-4" />
-                    <span
-                      className={cn(
-                        "font-medium",
-                        availableStock === 0 && "text-red-500",
-                        availableStock > 0 && availableStock <= 10 && "text-orange-500",
-                        availableStock > 10 && "text-green-600",
-                      )}
-                    >
-                      {availableStock} in stock
-                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -222,19 +298,19 @@ const ShopPage = () => {
                 </div>
 
                 <Button 
-                  disabled={availableStock === 0}
                   onClick={() => handleAddtoCart(med)}
                   className="gap-2"
                 >
                   <ShoppingCart className="h-4 w-4" />
-                  {availableStock === 0 ? "Out of Stock" : "Add to cart"}
+                  Add to cart
                 </Button>
               </CardFooter>
             </Card>
           </div>
           )
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </section>
   );
 };

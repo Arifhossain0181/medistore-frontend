@@ -1,67 +1,96 @@
 
 
+"use client"
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Pill, Thermometer, Heart, Package, Stethoscope, Baby, Eye, Bone } from "lucide-react";
+import { Pill, Thermometer, Heart, Package, Stethoscope, Baby, Eye, Bone, Activity, LucideIcon } from "lucide-react";
+import { getAllCategories } from "@/lib/api/medicine";
+
+// Icon mapping for categories
+const iconMap: Record<string, LucideIcon> = {
+    "pain relief": Pill,
+    "cold & flu": Thermometer,
+    "heart health": Heart,
+    "first aid": Package,
+    "vitamins": Stethoscope,
+    "baby care": Baby,
+    "eye care": Eye,
+    "bone & joint": Bone,
+};
+
+// Color mapping for categories
+const colorMap: Record<string, string> = {
+    "pain relief": "bg-red-100 text-red-600",
+    "cold & flu": "bg-blue-100 text-blue-600",
+    "heart health": "bg-pink-100 text-pink-600",
+    "first aid": "bg-green-100 text-green-600",
+    "vitamins": "bg-yellow-100 text-yellow-600",
+    "baby care": "bg-purple-100 text-purple-600",
+    "eye care": "bg-indigo-100 text-indigo-600",
+    "bone & joint": "bg-orange-100 text-orange-600",
+};
+
+type Category = {
+    id: string;
+    name: string;
+    description?: string;
+};
 
 export default function CategoryPage() {
-    const categories = [
-        {
-            name: "Pain Relief",
-            icon: Pill,
-            description: "Headaches, muscle pain & fever",
-            color: "bg-red-100 text-red-600",
-            url: "/shop?category=pain-relief"
-        },
-        {
-            name: "Cold & Flu",
-            icon: Thermometer,
-            description: "Cough, cold & flu medicines",
-            color: "bg-blue-100 text-blue-600",
-            url: "/shop?category=cold-flu"
-        },
-        {
-            name: "Heart Health",
-            icon: Heart,
-            description: "Cardiovascular care products",
-            color: "bg-pink-100 text-pink-600",
-            url: "/shop?category=heart-health"
-        },
-        {
-            name: "First Aid",
-            icon: Package,
-            description: "Bandages, antiseptics & more",
-            color: "bg-green-100 text-green-600",
-            url: "/shop?category=first-aid"
-        },
-        {
-            name: "Vitamins",
-            icon: Stethoscope,
-            description: "Supplements & multivitamins",
-            color: "bg-yellow-100 text-yellow-600",
-            url: "/shop?category=vitamins"
-        },
-        {
-            name: "Baby Care",
-            icon: Baby,
-            description: "Products for infants & kids",
-            color: "bg-purple-100 text-purple-600",
-            url: "/shop?category=baby-care"
-        },
-        {
-            name: "Eye Care",
-            icon: Eye,
-            description: "Eye drops & vision care",
-            color: "bg-indigo-100 text-indigo-600",
-            url: "/shop?category=eye-care"
-        },
-        {
-            name: "Bone & Joint",
-            icon: Bone,
-            description: "Joint pain & bone health",
-            color: "bg-orange-100 text-orange-600",
-            url: "/shop?category=bone-joint"
+   const [categories, setCategories] = useState<Category[]>([]);
+   const [loading, setLoading] = useState(true);
+   
+   useEffect(() => {
+    const fetchcategories = async() => {
+        try {
+            setLoading(true);
+            const data = await getAllCategories();
+            setCategories(data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    }
+    fetchcategories();
+   }, []);
+   
+   // Helper functions
+   const getCategoryIcon = (categoryName: string) => {
+       const normalizedName = categoryName.toLowerCase();
+       return iconMap[normalizedName] || Activity;
+   };
+   
+   const getCategoryColor = (categoryName: string) => {
+       const normalizedName = categoryName.toLowerCase();
+       return colorMap[normalizedName] || "bg-gray-100 text-gray-600";
+   };
+   
+   const getCategoryUrl = (categoryName: string) => {
+       const slug = categoryName.toLowerCase().replace(/\s+&\s+/g, '-').replace(/\s+/g, '-');
+       return `/shop?category=${slug}`;
+   };
+   
+   if (loading) {
+       return (
+           <section className="py-12 md:py-16 lg:py-20 bg-gray-50">
+               <div className="container mx-auto px-4">
+                   <div className="text-center mb-8 md:mb-12">
+                       <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 md:mb-4">
+                           Shop by Category
+                       </h2>
+                   </div>
+                   <div className="flex items-center justify-center py-12">
+                       <div className="text-center space-y-4">
+                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                           <p className="text-gray-600">Loading categories...</p>
+                       </div>
+                   </div>
+               </div>
+           </section>
+       );
+   }
 
     return (
         <section className="py-12 md:py-16 lg:py-20 bg-gray-50">
@@ -79,21 +108,24 @@ export default function CategoryPage() {
                 {/* Categories Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                     {categories.map((category) => {
-                        const Icon = category.icon;
+                        const Icon = getCategoryIcon(category.name);
+                        const colorClass = getCategoryColor(category.name);
+                        const categoryUrl = getCategoryUrl(category.name);
+                        
                         return (
                             <Link
-                                key={category.name}
-                                href={category.url}
+                                key={category.id}
+                                href={categoryUrl}
                                 className="group bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-blue-200 transform hover:-translate-y-1"
                             >
-                                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-lg ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-lg ${colorClass} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                                     <Icon className="w-7 h-7 md:w-8 md:h-8" />
                                 </div>
                                 <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                                     {category.name}
                                 </h3>
                                 <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                                    {category.description}
+                                    {category.description || `Browse ${category.name} products`}
                                 </p>
                                 <div className="mt-4 text-sm font-medium text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
                                     Browse products
