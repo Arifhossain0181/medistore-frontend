@@ -85,15 +85,7 @@ export default function DashboardPage() {
                   Explore our products
                 </p>
               </Link>
-              <Link
-                href="/dashboard/cart"
-                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
-              >
-                <h4 className="font-semibold mb-2">View Cart</h4>
-                <p className="text-sm text-muted-foreground">
-                  Check your cart items
-                </p>
-              </Link>
+             
               <Link
                 href="/customer/orders"
                 className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
