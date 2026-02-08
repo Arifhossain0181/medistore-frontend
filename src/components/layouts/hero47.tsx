@@ -40,8 +40,8 @@ const Hero47 = ({
     },
   },
   image = {
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/placeholder-dark-7-tall.svg",
-    alt: "Placeholder",
+    src: "/Gemini_Generated_Image_u054swu054swu054.png",
+    alt: "MediStore Hero",
   },
   className,
 }: Hero47Props) => {

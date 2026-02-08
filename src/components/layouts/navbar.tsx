@@ -66,7 +66,7 @@ interface Navbar1Props {
 const Navbar = ({
   logo = {
     url: "/",
-    src: "/logo.svg",
+    src: "/Gemini_Generated_Image_pp41bmpp41bmpp41.png",
     alt: "logo",
     title: "MediStore",
   },
