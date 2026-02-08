@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { getSingleMedicine, incrementViewCount } from "@/lib/api/medicine"
+import { getSingleMedicine } from "@/lib/api/medicine"
 import { Button } from "@/nextjs/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Eye } from "lucide-react"
@@ -62,25 +62,6 @@ export default function Mediasingle(){
       try {
         const data = await getSingleMedicine(id as string)
         setMedicine(data)
-
-        // Check if this product has been viewed before in this session
-        const viewedKey = `medicine_viewed_${id}`
-        const hasViewed = sessionStorage.getItem(viewedKey)
-        
-        if (!hasViewed) {
-          console.log(" First time viewing this product, incrementing count...")
-          const success = await incrementViewCount(id as string)
-          
-          if (success) {
-            // Mark as viewed in session storage to prevent duplicate counts
-            sessionStorage.setItem(viewedKey, "true")
-            console.log(" View count recorded")
-          } else {
-            console.warn(" Backend view count failed - check if endpoint exists")
-          }
-        } else {
-          console.log(" Product already viewed in this session")
-        }
       } catch (err) {
         console.error("Error fetching medicine:", err)
       }

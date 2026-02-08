@@ -1,10 +1,183 @@
-import React from "react";
+"use client";
 
-export default function CustomerOrderDetailsPage() {
+import React, { useEffect, useState, use } from "react";
+import { getSingleOrder } from "@/lib/api/order";
+import { useRouter } from "next/navigation";
+import { Button } from "@/nextjs/ui/button";
+
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  medicine: {
+    id: string;
+    name: string;
+    manufacturer: string;
+    imageUrl?: string;
+  };
+}
+
+interface OrderDetails {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  shippingAddress?: string;
+  phone?: string;
+  items: OrderItem[];
+}
+
+export default function CustomerOrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { id } = use(params);
+  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      loadOrderDetails();
+    }
+  }, [id]);
+
+  const loadOrderDetails = async () => {
+    try {
+      const data = await getSingleOrder(id);
+      console.log("Order details:", data);
+      setOrder(data);
+    } catch (error) {
+      console.error("Error loading order:", error);
+      alert("Failed to load order details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-6">Loading order details...</div>;
+  }
+
+  if (!order) {
+    return (
+      <div className="p-6">
+        <p className="text-red-500">Order not found</p>
+        <Button onClick={() => router.back()} className="mt-4">
+          Go Back
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1>Order Details</h1>
-      {/* Show order items, status, shipping info */}
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-6">
+        <Button onClick={() => router.back()} variant="outline">
+          ← Back to Orders
+        </Button>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="border-b pb-4 mb-6">
+          <h1 className="text-2xl font-bold mb-2">Order Details</h1>
+          <p className="text-sm text-gray-500">Order ID: {order.id}</p>
+        </div>
+
+        {/* Order Info */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-3">Order Information</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date:</span>
+                <span className="font-medium">
+                  {new Date(order.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Status:</span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium
+                    ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : ''}
+                    ${order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' : ''}
+                    ${order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' : ''}
+                    ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : ''}
+                    ${order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : ''}
+                  `}
+                >
+                  {order.status}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total:</span>
+                <span className="font-bold text-lg">
+                  ${order.total ? order.total.toFixed(2) : '0.00'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping Info */}
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-3">Shipping Information</h3>
+            <div className="text-sm space-y-1">
+              {order.shippingAddress && (
+                <p className="text-gray-600">{order.shippingAddress}</p>
+              )}
+              {order.phone && (
+                <p className="text-gray-600">Phone: {order.phone}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Order Items */}
+        <div>
+          <h3 className="font-semibold text-gray-700 mb-4">Order Items</h3>
+          <div className="space-y-4">
+            {order.items && order.items.length > 0 ? (
+              order.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50"
+                >
+                  {item.medicine?.imageUrl && (
+                    <img
+                      src={item.medicine.imageUrl}
+                      alt={item.medicine.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-medium">{item.medicine?.name || 'Unknown Medicine'}</h4>
+                    <p className="text-sm text-gray-500">
+                      {item.medicine?.manufacturer}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      ${item.price ? item.price.toFixed(2) : '0.00'} × {item.quantity || 0}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">No items in this order</p>
+            )}
+          </div>
+        </div>
+
+        {/* Order Summary */}
+        <div className="mt-6 pt-6 border-t">
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-semibold">Order Total:</span>
+            <span className="text-2xl font-bold text-green-600">
+              ${order.total ? order.total.toFixed(2) : '0.00'}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

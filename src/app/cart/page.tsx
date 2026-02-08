@@ -65,12 +65,12 @@ export default function CartPage() {
       )}
       <div className="flex justify-between items-center mb-6">
         <span className="font-semibold text-lg">Total:</span>
-        <span className="font-bold text-xl text-green-600">৳{getTotalPrice()}</span>
+        <span className="font-bold text-xl text-green-600">${getTotalPrice()}</span>
       </div>
       {user?.role === "CUSTOMER" ? (
         <button
           className="w-full py-2 bg-blue-600 text-white font-semibold rounded disabled:bg-gray-400"
-          onClick={() => router.push("/checkout")}
+          onClick={() => router.push("/customer/checkout")}
           disabled={items.length === 0}
         >Proceed to Checkout</button>
       ) : (

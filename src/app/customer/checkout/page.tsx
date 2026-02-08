@@ -27,7 +27,7 @@ export default function CheckoutPage() {
       router.replace("/login");
     }
     if (items.length === 0) {
-      router.replace("/");
+      router.replace("/cart");
     }
   }, [user, router, items]);
 

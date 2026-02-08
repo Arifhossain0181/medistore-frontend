@@ -36,9 +36,8 @@ const customerMenuItems = [
 
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
-  { title: "Carts", url: "/customer/carts", icon: ShoppingCart },
   { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
-  { title: "My Orders", url: "/customer/myorders", icon: Package },
+  { title: "My Orders", url: "/customer/orders", icon: Package },
   { title: "Profile", url: "/customer/profile", icon: User },
 ];
 
@@ -47,7 +46,7 @@ const sellerMenuItems = [
 
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Manage Medicines", url: "/seller/medicines", icon: Package },
-  { title: "Add Medicine", url: "/seller/medicines/add", icon: PlusCircle },
+  { title: "Add Medicine", url: "/seller/add", icon: PlusCircle },
   { title: "Orders", url: "/seller/orders", icon: FileText },
 ];
 

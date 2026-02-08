@@ -8,7 +8,8 @@ export async function getAllMedicines(){
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
     })
 
     if(!res.ok){
@@ -27,6 +28,7 @@ export async function getSingleMedicine(id: string){
     console.log("Fetching from:", `${API}/api/medicines/${id}`)
     const res = await fetch(`${API}/api/medicines/${id}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -42,35 +44,6 @@ export async function getSingleMedicine(id: string){
     // Backend returns { success: true, data: medicine }
     // Extract the actual medicine data
     return response.data || response;
-}
-export async function incrementViewCount(id: string) {
-  try {
-    console.log("Attempting to increment view count for ID:", id)
-    console.log("API URL:", `${API}/api/medicines/${id}/view`)
-    
-    const res = await fetch(`${API}/api/medicines/${id}/view`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    
-    console.log("Response status:", res.status)
-    
-    if (!res.ok) {
-      console.error(
-        ` Failed to increment view count: ${res.status} ${res.statusText}`
-      )
-      return false
-    }
-    
-    const data = await res.json()
-    console.log(" View count incremented successfully:", data)
-    return true
-  } catch (err) {
-    console.error(" Error incrementing view count:", err)
-    return false
-  }
 }
 
 export const fetchCategories = {
@@ -92,6 +65,7 @@ export async function getAllCategories() {
   try {
     const res = await fetch(`${API}/api/categories`, {
       method: 'GET',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       }
@@ -190,6 +164,60 @@ export async function getAlluser(){
         } else {
             console.error("Error fetching users:", error);
         }
+        throw error;
+    }
+}
+
+// Update medicine
+export async function updateMedicine(id: string, data:string | number | object) {
+    try {
+        const url = `${API}/api/medicines/${id}`;
+        console.log('Updating medicine:', { url, id, data });
+        
+        const res = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+        
+        console.log('Update response status:', res.status);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Update failed:', errorText);
+            throw new Error(`Failed to update medicine: ${res.status} ${res.statusText}`);
+        }
+        return await res.json();
+    } catch (error) {
+        console.error("Error updating medicine:", error);
+        throw error;
+    }
+}
+
+// Delete medicine
+export async function deleteMedicine(id: string) {
+    try {
+        const url = `${API}/api/medicines/${id}`;
+        console.log('Deleting medicine:', { url, id });
+        
+        const res = await fetch(url, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        console.log('Delete response status:', res.status);
+        
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Delete failed:', errorText);
+            throw new Error(`Failed to delete medicine: ${res.status} ${res.statusText}`);
+        }
+        return await res.json();
+    } catch (error) {
+        console.error("Error deleting medicine:", error);
         throw error;
     }
 }
