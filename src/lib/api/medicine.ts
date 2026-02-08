@@ -261,7 +261,7 @@ export async function unbanUser(userId: string) {
 export async function updateUserRole(userId: string, role: "CUSTOMER" | "SELLER" | "ADMIN") {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}`,
+            `${API}/api/admin/users/${userId}/role`,
             { role },
             { withCredentials: true }
         );

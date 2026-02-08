@@ -30,6 +30,11 @@ export default function LoginForm() {
       
       if (res.data && res.data.user) {
         const user = res.data.user;
+        
+        console.log(" Backend Response:", res.data);
+        console.log(" User Object:", user);
+        console.log(" Role from Backend:", user.role);
+        
         const userData = {
           id: user.id,
           name: user.name,
@@ -37,11 +42,11 @@ export default function LoginForm() {
           role: (user.role || 'CUSTOMER') as 'ADMIN' | 'SELLER' | 'CUSTOMER',
         };
         
-        console.log("Login successful:", userData);
-        console.log("User ID:", userData.id);
-        console.log("User Name:", userData.name);
-        console.log("User Email:", userData.email);
-        console.log("User Role:", userData.role);
+        console.log("Final User Data:", userData);
+        console.log(" User Role:", userData.role);
+        
+        // Clear old cached data before setting new user
+        localStorage.removeItem('medistore-auth');
         
         setUser(userData);
         // Sync cart with logged in user

@@ -114,13 +114,16 @@ const Navbar = ({
         {},
         { withCredentials: true }
       );
+      // Clear auth cache completely
+      localStorage.removeItem('medistore-auth');
       logout();
       // Don't clear cart on logout - keep items visible
       toast.success("Logged out successfully");
       router.push("/");
     } catch (err: unknown) {
       console.error("Logout error:", err);
-      // Clear user anyway even if API call fails
+      // Clear auth cache and user anyway even if API call fails
+      localStorage.removeItem('medistore-auth');
       logout();
       toast.success("Logged out successfully");
       router.push("/");

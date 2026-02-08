@@ -60,7 +60,10 @@ export default function AdminUsersPage() {
     setChangingRole(userId);
     try {
       await updateUserRole(userId, newRole);
-      toast.success(`User role updated to ${newRole}`);
+      toast.success(` User role updated to ${newRole}!`, {
+        description: " User MUST logout and login again to see new role",
+        duration: 6000,
+      });
       await loadUsers();
     } catch (error) {
       const errorMsg = (error as {response?: {data?: {message?: string}}}).response?.data?.message || 

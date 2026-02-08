@@ -73,7 +73,7 @@ const Hero47 = ({
           </div>
         </div>
         <div className="relative z-10">
-          <div className="absolute top-2.5 left-1/2! h-[92%]! w-[69%]! -translate-x-[52%] overflow-hidden rounded-[35px]">
+          <div className="absolute top-2.5 left-1/2! h-[92%]! w-[100%]! -translate-x-[52%] overflow-hidden rounded-[35px]">
             <img
               src={image.src}
               alt={image.alt}
@@ -84,9 +84,9 @@ const Hero47 = ({
             className="relative z-10"
             src={image.src}
             alt={image.alt}
-            width={450}
+            width={500}
             height={889}
-            alt="iphone"
+           
           />
         </div>
       </div>
