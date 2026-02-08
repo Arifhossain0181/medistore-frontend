@@ -4,6 +4,8 @@ import React, { useEffect, useState, use } from "react";
 import { getSingleOrder } from "@/lib/api/order";
 import { useRouter } from "next/navigation";
 import { Button } from "@/nextjs/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface OrderItem {
   id: string;
@@ -46,14 +48,29 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
       setOrder(data);
     } catch (error) {
       console.error("Error loading order:", error);
-      alert("Failed to load order details");
+      toast.error("Failed to load order details. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="p-6">Loading order details...</div>;
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <Skeleton className="h-10 w-32 mb-6" />
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="border-b pb-4 mb-6">
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!order) {

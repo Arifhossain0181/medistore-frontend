@@ -5,6 +5,8 @@ import { getAllMedicines, updateMedicine, deleteMedicine } from "@/lib/api/medic
 import { useRouter } from "next/navigation";
 import { Button } from "@/nextjs/ui/button";
 import { Input } from "@/nextjs/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Medicine {
   id: string;
@@ -35,7 +37,7 @@ export default function SellerMedicinesPage() {
       setMedicines(medicinesArray);
     } catch (error) {
       console.error("Error loading medicines:", error);
-      alert("Failed to load medicines");
+      toast.error("Failed to load medicines. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -47,27 +49,27 @@ export default function SellerMedicinesPage() {
     try {
       const result = await updateMedicine(id, { stock: Number(stockValue) });
       console.log('Update result:', result);
-      alert("Stock updated!");
+      toast.success("Stock updated successfully!");
       setEditingStock(null);
       loadMedicines();
     } catch (error) {
       console.error('Stock update error:', error);
-      alert("Failed to update stock");
+      toast.error("Failed to update stock. Please try again.");
     }
   };
 
   // Delete medicine
   const handleDelete = async (id: string, name: string) => {
     console.log('Attempting to delete medicine:', { id, name });
-    if (confirm(`Delete ${name}?`)) {
+    if (window.confirm(`Delete ${name}?`)) {
       try {
         const result = await deleteMedicine(id);
         console.log('Delete result:', result);
-        alert("Medicine deleted!");
+        toast.success("Medicine deleted successfully!");
         loadMedicines();
       } catch (error) {
         console.error('Delete error:', error);
-        alert("Failed to delete medicine");
+        toast.error("Failed to delete medicine. Please try again.");
       }
     }
   };
@@ -82,7 +84,34 @@ export default function SellerMedicinesPage() {
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded-lg">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
+                <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
+                <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
+                <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-24" /></th>
+                <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {[...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  <td className="px-4 py-4"><Skeleton className="h-4 w-32" /></td>
+                  <td className="px-4 py-4"><Skeleton className="h-4 w-16" /></td>
+                  <td className="px-4 py-4"><Skeleton className="h-4 w-12" /></td>
+                  <td className="px-4 py-4"><Skeleton className="h-4 w-28" /></td>
+                  <td className="px-4 py-4 flex gap-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-8 w-16" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : medicines.length === 0 ? (
         <p className="text-gray-500">No medicines found</p>
       ) : (

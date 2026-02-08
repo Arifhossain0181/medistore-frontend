@@ -2,6 +2,8 @@
 
 import { fetchOrders } from "@/lib/api/order";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
@@ -26,7 +28,7 @@ useEffect(() => {
     const { data, error } = await fetchOrders.getSellerOrders();
     if(error){
       console.error("Error fetching orders:", error);
-      alert("Failed to load orders");
+      toast.error("Failed to load orders. Please try again.");
       setLoading(false);
     }
     else{
@@ -45,7 +47,32 @@ useEffect(() => {
       <h1 className="text-3xl font-bold mb-6">Seller Orders ({orders.length})</h1>
       
       {loading ? (
-        <p>Loading orders...</p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded-lg">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-24" /></th>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
+                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {[...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-6 w-20" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
+                  <td className="px-6 py-4"><Skeleton className="h-8 w-16" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : orders.length === 0 ? (
         <p className="text-gray-500">No orders found</p>
       ) : (

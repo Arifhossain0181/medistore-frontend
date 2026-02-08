@@ -60,11 +60,13 @@ export default function CheckoutPage() {
       
       // Clear cart and redirect
       clearCart();
-      alert("Order placed successfully!");
+      toast.success("Order placed successfully!", {
+        description: "Your order has been confirmed and will be delivered soon."
+      });
       router.push("/customer/orders");
     } catch (error) {
       console.error("Order error:", error);
-      alert("Failed to place order. Please try again.");
+      toast.error("Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { Label } from "@/nextjs/ui/label";
 import { Button } from "@/nextjs/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Category {
   id: string;
@@ -27,7 +28,7 @@ export default function AddPage() {
         setCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        alert("Failed to load categories");
+        toast.error("Failed to load categories. Please refresh the page.");
       } finally {
         setLoadingCategories(false);
       }
@@ -56,11 +57,13 @@ export default function AddPage() {
       // Call API to add medicine
       const result = await addmedicine(data);
       console.log("Success:", result);
-      alert("Medicine added!");
+      toast.success("Medicine added successfully!", {
+        description: "Redirecting to medicines list..."
+      });
       router.push("/seller/medicines");
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to add medicine");
+      toast.error("Failed to add medicine. Please try again.");
     }
 
     setLoading(false);

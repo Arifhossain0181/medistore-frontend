@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { useCartStore } from "@/store/cartstore"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type Medicine = {
   id: string
@@ -27,6 +28,7 @@ export default function Mediasingle(){
     const {id} = useParams()
     const router = useRouter()
     const [medicine, setMedicine] = useState<Medicine | null>(null)
+    const [loading, setLoading] = useState(true)
     const { addToCart } = useCartStore()
 
     const handleAddToCart = () => {
@@ -60,15 +62,45 @@ export default function Mediasingle(){
   useEffect(() => {
     async function loaddata() {
       try {
+        setLoading(true)
         const data = await getSingleMedicine(id as string)
         setMedicine(data)
       } catch (err) {
         console.error("Error fetching medicine:", err)
+        toast.error("Failed to load medicine details. Please try again.")
+      } finally {
+        setLoading(false)
       }
     }
     loaddata()
   }, [id])
+  
+  if (loading) {
     return (
+      <section className="container mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+          <Skeleton className="w-full h-96 rounded-lg" />
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-12 w-40" />
+          </div>
+        </div>
+      </section>
+    )
+  }
+  
+  if (!medicine) {
+    return (
+      <section className="container mx-auto px-4 py-10">
+        <p className="text-center text-red-500">Medicine not found</p>
+      </section>
+    )
+  }
+  
+  return (
          <section className="container mx-auto px-4 py-10">
       <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
         {/* IMAGE */}

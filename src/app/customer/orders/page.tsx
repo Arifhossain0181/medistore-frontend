@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { getMyOrders } from "@/lib/api/order";
 import { useRouter } from "next/navigation";
 import { Button } from "@/nextjs/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Order {
   id: string;
@@ -32,7 +34,7 @@ export default function CustomerOrdersPage() {
       setOrders(ordersArray);
     } catch (error) {
       console.error("Error loading orders:", error);
-      alert("Failed to load orders");
+      toast.error("Failed to load orders. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -43,7 +45,26 @@ export default function CustomerOrdersPage() {
       <h1 className="text-3xl font-bold mb-6">My Orders</h1>
 
       {loading ? (
-        <p>Loading orders...</p>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow">
+              <div className="flex justify-between items-start mb-3">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">No orders yet</p>

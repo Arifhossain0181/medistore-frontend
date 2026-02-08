@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardHeader,
@@ -71,6 +72,7 @@ const ShopPage = () => {
       }
       catch(error){
         console.error("Failed to load data:", error)
+        toast.error("Failed to load medicines. Please try again.")
         setError("Failed to load data")
       }
       finally{
@@ -118,7 +120,26 @@ const ShopPage = () => {
 
 
   if (loading) {
-    return <p className="text-center py-10 text-lg">Loading medicines...</p>;
+    return (
+      <section className="px-4 py-10">
+        <div className="mb-8">
+          <Skeleton className="h-10 w-64 mb-2" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="h-56 w-full" />
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   if (error) {

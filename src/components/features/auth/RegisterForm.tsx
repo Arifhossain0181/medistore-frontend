@@ -11,8 +11,7 @@ export default function RegisterForm() {
         name: z.string().min(1, "Name is required"),
         email: z.email("Invalid email address"),
         phone: z.string().optional(),
-        password: z.string().min(6, "Password must be at least 6 characters"),
-        role: z.enum(["CUSTOMER", "SELLER"])
+        password: z.string().min(6, "Password must be at least 6 characters")
     });
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -20,8 +19,7 @@ export default function RegisterForm() {
         name: "",
         email: "",
         phone: "",
-        password: "",
-        role: "CUSTOMER" as "CUSTOMER" | "SELLER"
+        password: ""
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -51,7 +49,7 @@ export default function RegisterForm() {
                     name: validatedData.name,
                     password: validatedData.password,
                     phone: validatedData.phone,
-                    role: validatedData.role
+                    role: "CUSTOMER" // All users register as CUSTOMER
                 },
                 { withCredentials: true }
             );
@@ -109,16 +107,6 @@ export default function RegisterForm() {
                 className="input" 
                 required 
             />
-            <select 
-                name="role" 
-                value={form.role}
-                onChange={handleChange} 
-                className="input" 
-                required
-            >
-                <option value="CUSTOMER">Customer</option>
-                <option value="SELLER">Seller</option>
-            </select>
             <button type="submit" className="btn btn-primary mt-2" disabled={loading}>
                 {loading ? "Registering..." : "Register"}
             </button>

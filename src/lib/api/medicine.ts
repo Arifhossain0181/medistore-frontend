@@ -258,5 +258,23 @@ export async function unbanUser(userId: string) {
     }
 }
 
+export async function updateUserRole(userId: string, role: "CUSTOMER" | "SELLER" | "ADMIN") {
+    try {
+        const res = await axios.patch(
+            `${API}/api/admin/users/${userId}`,
+            { role },
+            { withCredentials: true }
+        );
+        return res.data.data || res.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error updating user role:", error.response?.data || error.message);
+        } else {
+            console.error("Error updating user role:", error);
+        }
+        throw error;
+    }
+}
+
 
 
