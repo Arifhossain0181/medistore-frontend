@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 export default function AboutPage() {
   return (
@@ -79,7 +80,7 @@ export default function AboutPage() {
       <section className="bg-indigo-50 py-16 text-center px-6 rounded-lg">
         <h2 className="text-3xl font-bold mb-4">Ready to explore our shop?</h2>
         <p className="text-gray-600 mb-6">Browse our medicines and place your order today!</p>
-        <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Shop Now</Button>
+        <Link href="/shop" className="bg-indigo-600 text-white hover:bg-indigo-700 px-6 py-3 rounded-lg inline-block">Shop Now</Link>
       </section>
 
     </div>

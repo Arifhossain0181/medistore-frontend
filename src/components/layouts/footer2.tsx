@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-
+import logs from "../../../public/Gemini_Generated_Image_pp41bmpp41bmpp41.png";
 import { Logo, LogoImage, LogoText } from "@/components/logo";
 
 interface MenuItem {
@@ -87,9 +87,9 @@ const Footer2 = ({
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
             <div className="col-span-2 mb-8 lg:mb-0">
               <div className="flex items-center gap-2 lg:justify-start">
-                <Logo url="https://shadcnblocks.com">
+                <Logo url="/">
                   <LogoImage
-                    src={logo.src}
+                    src={logs.src}
                     alt={logo.alt}
                     title={logo.title}
                     className="h-10 dark:invert"

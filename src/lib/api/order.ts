@@ -32,7 +32,12 @@ export const fetchOrders = {
 }
 
 // Create order
-export async function createOrder(orderData: string) {
+export async function createOrder(orderData: {
+  items: { medicineId: string; quantity: number; price: number; }[];
+  total: number;
+  shippingAddress: string;
+  phone: string;
+}) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
       method: "POST",

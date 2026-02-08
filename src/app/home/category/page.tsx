@@ -40,15 +40,18 @@ type Category = {
 export default function CategoryPage() {
    const [categories, setCategories] = useState<Category[]>([]);
    const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
    
    useEffect(() => {
     const fetchcategories = async() => {
         try {
             setLoading(true);
+            setError(null);
             const data = await getAllCategories();
             setCategories(data);
         } catch (error) {
             console.error("Error fetching categories:", error);
+            setError(error instanceof Error ? error.message : "Failed to load categories");
         } finally {
             setLoading(false);
         }
@@ -85,6 +88,32 @@ export default function CategoryPage() {
                        <div className="text-center space-y-4">
                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                            <p className="text-gray-600">Loading categories...</p>
+                       </div>
+                   </div>
+               </div>
+           </section>
+       );
+   }
+
+   if (error) {
+       return (
+           <section className="py-12 md:py-16 lg:py-20 bg-gray-50">
+               <div className="container mx-auto px-4">
+                   <div className="text-center mb-8 md:mb-12">
+                       <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 md:mb-4">
+                           Shop by Category
+                       </h2>
+                   </div>
+                   <div className="flex items-center justify-center py-12">
+                       <div className="text-center space-y-4">
+                           <div className="text-red-600 text-lg font-semibold">⚠️ Error Loading Categories</div>
+                           <p className="text-gray-600">{error}</p>
+                           <button 
+                               onClick={() => window.location.reload()} 
+                               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                           >
+                               Retry
+                           </button>
                        </div>
                    </div>
                </div>

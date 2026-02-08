@@ -2,11 +2,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-type User ={
+export type User ={
     id: string;
     name:string;
     email:string;
     role:'ADMIN' | 'SELLER' |'CUSTOMER';
+    image?:string;
 }
 
 type AuthState = {

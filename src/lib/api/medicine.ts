@@ -62,6 +62,8 @@ export const fetchCategories = {
 
 export async function getAllCategories() {
   try {
+    console.log("Fetching categories from:", `${API}/api/categories`);
+    
     const res = await fetch(`${API}/api/categories`, {
       method: 'GET',
       credentials: 'include',
@@ -75,9 +77,11 @@ export async function getAllCategories() {
     }
 
     const response = await res.json();
+    console.log("Categories fetched successfully:", response);
     return response.data || response;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    console.error("API URL:", API);
     throw error;
   }
 }
@@ -199,24 +203,17 @@ export async function updateMedicine(id: string, data:string | number | object) 
 // Delete medicine
 export async function deleteMedicine(id: string) {
     try {
-        const url = `${API}/api/medicines/${id}`;
-        console.log('Deleting medicine:', { url, id });
-        
-        const res = await fetch(url, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        
-        console.log('Delete response status:', res.status);
-        
-        if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Delete failed:', errorText);
-            throw new Error(`Failed to delete medicine: ${res.status} ${res.statusText}`);
-        }
-        return await res.json();
+        const res = await axios.delete(
+            `${API}/api/medicines/${id}`,
+            { withCredentials: true }
+        );
+        return res.data.data || res.data;
     } catch (error) {
-        console.error("Error deleting medicine:", error);
+        if (axios.isAxiosError(error)) {
+            console.error("Error deleting medicine:", error.response?.data || error.message);
+        } else {
+            console.error("Error deleting medicine:", error);
+        }
         throw error;
     }
 }
@@ -242,7 +239,7 @@ export async function banUser(userId: string) {
 export async function unbanUser(userId: string) {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}`,
+            `${API}/api/admin/users/${userId}/ban`,
             { isBanned: false },
             { withCredentials: true }
         );

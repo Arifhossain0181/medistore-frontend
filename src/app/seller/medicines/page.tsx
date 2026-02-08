@@ -69,7 +69,7 @@ export default function SellerMedicinesPage() {
         loadMedicines();
       } catch (error) {
         console.error('Delete error:', error);
-        toast.error("Failed to delete medicine. Please try again.");
+        toast.error("Failed to delete medicine. Please try again. The medicines are now Booked so you cannot delete them.");
       }
     }
   };
