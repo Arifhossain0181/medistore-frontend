@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Eye } from "lucide-react"
 import { toast } from "sonner"
 import { useCartStore } from "@/store/cartstore"
+import { useAuthStore } from "@/store/authstore"
 import { Skeleton } from "@/components/ui/skeleton"
 
 type Medicine = {
@@ -30,9 +31,22 @@ export default function Mediasingle(){
     const [medicine, setMedicine] = useState<Medicine | null>(null)
     const [loading, setLoading] = useState(true)
     const { addToCart } = useCartStore()
+    const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
     const handleAddToCart = () => {
       if (!medicine) return
+      
+      // Check if user is logged in
+      if (!isAuthenticated) {
+        toast.error("Please login to add items to cart", {
+          description: "You need to be logged in to shop",
+          action: {
+            label: "Login",
+            onClick: () => router.push("/auth/login")
+          }
+        })
+        return
+      }
       
       // Validate required fields
       if (!medicine.price || !medicine.name) {

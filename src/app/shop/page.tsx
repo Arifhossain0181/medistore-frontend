@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HeartIcon, EyeIcon, PackageIcon, ShoppingCart, Search, Filter } from "lucide-react";
@@ -21,6 +21,8 @@ import {
 import { cn } from "@/lib/utils";
 import { getAllMedicines, getAllCategories } from "@/lib/api/medicine";
 import { useCartStore } from "@/store/cartstore";
+import { useAuthStore } from "@/store/authstore";
+import { useRouter } from "next/navigation";
 
 type Medicine = {
   id: string;
@@ -44,6 +46,8 @@ type Category = {
 
 const ShopPage = () => {
   const addToCart = useCartStore((s) => s.addToCart)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const router = useRouter()
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [likedId, setLikedId] = useState<string | null>(null);
@@ -96,6 +100,17 @@ const ShopPage = () => {
   });
   
   const handleAddtoCart = (med: Medicine) => {
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      toast.error("Please login to add items to cart", {
+        description: "You need to be logged in to shop",
+        action: {
+          label: "Login",
+          onClick: () => router.push("/auth/login")
+        }
+      })
+      return
+    }
     
     // Validate required fields
     if (!med.price || !med.name) {

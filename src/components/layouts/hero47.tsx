@@ -82,7 +82,8 @@ const Hero47 = ({
           </div>
           <img
             className="relative z-10"
-            src="https://deifkwefumgah.cloudfront.net/shadcnblocks/block/mockups/phone-2.png"
+            src={image.src}
+            alt={image.alt}
             width={450}
             height={889}
             alt="iphone"

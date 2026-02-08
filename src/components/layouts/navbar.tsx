@@ -129,7 +129,7 @@ const Navbar = ({
     
   return (
     <section className={cn("py-4", className)}>
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 ">
         {/* Desktop Menu */}
         <nav className="hidden items-center justify-between lg:flex">
           <div className="flex items-center gap-6">
@@ -140,11 +140,11 @@ const Navbar = ({
                 className="max-h-8 dark:invert"
                 alt={logo.alt}
               />
-              <span className="text-lg font-semibold tracking-tighter">
+              <span className="text-lg tracking-tighter font-bold">
                 {logo.title}
               </span>
             </Link>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4 font-bold hover:text-primary">
               <NavigationMenu>
                 <NavigationMenuList>
                   {menuItems.map((item) => renderMenuItem(item))}
