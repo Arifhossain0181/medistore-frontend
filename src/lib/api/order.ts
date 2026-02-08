@@ -32,7 +32,7 @@ export const fetchOrders = {
 }
 
 // Create order
-export async function createOrder(orderData: any) {
+export async function createOrder(orderData: string) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
       method: "POST",
@@ -95,3 +95,30 @@ export async function getSingleOrder(id: string) {
   }
 }
 
+export async function updateOrderStatus(id: string, status: string) {
+  console.log('Frontend: Calling updateOrderStatus with id:', id, 'status:', status);
+  const res = await fetch(`${API_BASE_URL}/api/orders/${id}`,  {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+  });
+
+  console.log('Frontend: Response status:', res.status);
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.log('Frontend: Error response:', errorText);
+    let error;
+    try {
+      error = JSON.parse(errorText);
+    } catch {
+      error = { message: errorText };
+    }
+    throw new Error(error.message || "Failed to update order status");
+  }
+  const result = await res.json();
+  console.log('Frontend: Success response:', result);
+  return result;
+}

@@ -1,6 +1,6 @@
-import { env } from  "../../env";
+import axios from 'axios';
 
-const API_BASE_URL = env.API_BASE_URL;
+const API = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // Simple interface for medicine data
 export interface MedicineData {
@@ -16,22 +16,22 @@ export interface MedicineData {
 // Simple async function to add medicine
 export async function addmedicine(med: MedicineData) {
     try {
-        const res = await fetch(`${API_BASE_URL}/api/medicines`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify(med),
-        });
-        
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
-        return await res.json();
+        const res = await axios.post(
+            `${API}/api/medicines`,
+            med,
+            { withCredentials: true }
+        );
+        return res.data;
     } catch (error) {
-        console.error("Error in addmedicine:", error);
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status;
+            const message = error.response?.data?.message || error.message;
+            
+            if (status === 401) {
+                throw new Error("Unauthorized: You must be logged in as a SELLER. If you were just promoted, please logout and login again.");
+            }
+            throw new Error(message);
+        }
         throw error;
     }
 }

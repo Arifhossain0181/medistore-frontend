@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchOrders } from "@/lib/api/order";
+import { fetchOrders, updateOrderStatus } from "@/lib/api/order";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -15,108 +15,121 @@ interface Order {
     name?: string;
     email: string;
   };
-  items?: string[];
 }
 
+const STATUSES = [
+  "PLACED",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+];
+
 export default function SellerOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const [orders, setOrders] = useState<Order[]>([]);
-const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const getOrders = async () => {
+      const { data, error } = await fetchOrders.getSellerOrders();
+      if (error) {
+        toast.error("Failed to load orders");
+        setLoading(false);
+      } else {
+        const ordersData = data?.data || data || [];
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+        setLoading(false);
+      }
+    };
+    getOrders();
+  }, []);
 
-useEffect(() => {
-  const getOrders = async () => {
-    const { data, error } = await fetchOrders.getSellerOrders();
-    if(error){
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to load orders. Please try again.");
-      setLoading(false);
+  const handleStatusChange = async (orderId: string, status: string) => {
+    try {
+      await updateOrderStatus(orderId, status);
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId ? { ...o, status } : o
+        )
+      );
+
+      toast.success("Order status updated");
+    } catch (err) {
+      toast.error("Failed to update order status");
     }
-    else{
-      // Backend returns { data: orders[] } format
-      const ordersData = data?.data || data || [];
-      console.log("Seller orders:", ordersData);
-      setOrders(Array.isArray(ordersData) ? ordersData : []);
-      setLoading(false);
-    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Skeleton className="h-10 w-40 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
-  getOrders();
-}, [])
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Seller Orders ({orders.length})</h1>
-      
-      {loading ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-24" /></th>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
-                <th className="px-6 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {[...Array(5)].map((_, i) => (
-                <tr key={i}>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-16" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-6 w-20" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-6 py-4"><Skeleton className="h-8 w-16" /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : orders.length === 0 ? (
+      <h1 className="text-3xl font-bold mb-6">
+        Seller Orders ({orders.length})
+      </h1>
+
+      {orders.length === 0 ? (
         <p className="text-gray-500">No orders found</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border rounded-lg">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left">Order</th>
+                <th className="px-6 py-3 text-left">Customer</th>
+                <th className="px-6 py-3 text-left">Total</th>
+                <th className="px-6 py-3 text-left">Status</th>
+                <th className="px-6 py-3 text-left">Date</th>
+                <th className="px-6 py-3 text-left">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+
+            <tbody className="divide-y">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm">{order.id.slice(0, 8)}...</td>
-                  <td className="px-6 py-4 text-sm">
-                    {order.user?.name || order.user?.email || order.userId}
+                <tr key={order.id}>
+                  <td className="px-6 py-4">
+                    {order.id.slice(0, 8)}...
                   </td>
-                  <td className="px-6 py-4 text-sm font-semibold">${order.total.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : ''}
-                      ${order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' : ''}
-                      ${order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' : ''}
-                      ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : ''}
-                      ${order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : ''}
-                    `}>
+
+                  <td className="px-6 py-4">
+                    {order.user?.name || order.user?.email}
+                  </td>
+
+                  <td className="px-6 py-4 font-semibold">
+                    ${order.total.toFixed(2)}
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <span className="px-2 py-1 rounded text-xs bg-gray-100">
                       {order.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm">
+
+                  <td className="px-6 py-4">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button className="text-blue-600 hover:underline mr-3">
-                      View Details
-                    </button>
-                    <button className="text-green-600 hover:underline">
-                      Update Status
-                    </button>
+
+                  <td className="px-6 py-4">
+                    <select
+                      value={order.status}
+                      onChange={(e) =>
+                        handleStatusChange(order.id, e.target.value)
+                      }
+                      className="border rounded px-2 py-1 text-sm"
+                    >
+                      {STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                 </tr>
               ))}

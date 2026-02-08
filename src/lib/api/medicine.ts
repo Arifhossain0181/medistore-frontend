@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000"
-
+const API = process.env.NEXT_PUBLIC_BACKEND_URL 
 export async function getAllMedicines(){
     console.log("Fetching from:", `${API}/api/medicines`)
     const res = await fetch(`${API}/api/medicines`, {

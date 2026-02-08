@@ -8,6 +8,7 @@ import { Button } from "@/nextjs/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/authstore";
 
 interface Category {
   id: string;
@@ -16,9 +17,24 @@ interface Category {
 
 export default function AddPage() {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // Check if user is authenticated and is a SELLER
+  useEffect(() => {
+    if (!user) {
+      toast.error("Please login to continue");
+      router.push("/login?redirect=/seller/add");
+      return;
+    }
+    if (user.role !== "SELLER") {
+      toast.error("Only sellers can add medicines");
+      router.push("/");
+      return;
+    }
+  }, [user, router]);
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -63,7 +79,11 @@ export default function AddPage() {
       router.push("/seller/medicines");
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Failed to add medicine. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to add medicine";
+      toast.error("Failed to add medicine", {
+        description: errorMessage,
+        duration: 5000
+      });
     }
 
     setLoading(false);

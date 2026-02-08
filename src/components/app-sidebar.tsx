@@ -38,7 +38,6 @@ const customerMenuItems = [
   { title: "Shop", url: "/shop", icon: ShoppingBag },
   { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
   { title: "My Orders", url: "/customer/orders", icon: Package },
-  { title: "Profile", url: "/customer/profile", icon: User },
 ];
 
 const sellerMenuItems = [
