@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# Medistore Frontend
+
+This is the frontend for the Medistore application, built with Next.js and TypeScript. It provides a modern, responsive interface for users, sellers, and administrators to interact with the Medistore platform.
+
+## Features
+- User authentication (login, register, role-based access)
+- Admin dashboard for managing users, medicines, orders, and categories
+- Seller dashboard for managing medicines and orders
+- Customer dashboard for browsing products, managing cart, and placing orders
+- Product browsing by category and search
+- Shopping cart and checkout flow
+- Order history and order details for customers
+- Responsive design for desktop and mobile
+- Modular and reusable UI components
 
 ## Getting Started
+1. Install dependencies:
+	```bash
+	npm install
+	```
+2. Start the development server:
+	```bash
+	npm run dev
+	```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-First, run the development server:
+## Folder Structure
+- `src/app/` - Application routes and pages (organized by user roles and features)
+  - `admin/` - Admin-specific pages (dashboard, users, medicines, orders, categories)
+  - `seller/` - Seller-specific pages (dashboard, medicines, orders)
+  - `customer/` - Customer-specific pages (dashboard, orders, checkout)
+  - `auth/` - Authentication pages (login, register)
+  - `home/`, `shop/`, `cart/`, `checkout/` - Main user flows
+- `src/components/` - UI components and layouts
+  - `features/` - Feature-specific components (auth forms, seller forms)
+  - `layouts/` - Layout and navigation components
+  - `ui/` - Reusable UI elements (buttons, cards, inputs, etc.)
+- `src/lib/` - API utilities and helper functions
+- `src/store/` - State management (auth, cart)
+- `src/types/` - TypeScript type definitions
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Development Notes
+- Uses Next.js App Router and TypeScript for type safety
+- State management is handled with custom stores in `src/store/`
+- API calls are organized in `src/lib/api/`
+- UI is built with modular components for easy reuse and maintenance
+- Follows best practices for folder structure and code organization
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Requirements
+- Node.js 18+
+- npm 9+
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+This project is for educational purposes.
