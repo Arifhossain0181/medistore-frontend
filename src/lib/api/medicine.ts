@@ -224,7 +224,7 @@ export async function deleteMedicine(id: string) {
 export async function banUser(userId: string) {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}`,
+            `${API}/api/admin/users/${userId}/ban`,
             { isBanned: true },
             { withCredentials: true }
         );
