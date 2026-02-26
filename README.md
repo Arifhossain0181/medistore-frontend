@@ -23,7 +23,7 @@ This is the frontend for the Medistore application, built with Next.js and TypeS
 	```bash
 	npm run dev
 	```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Open https://medistore-frontend-nu.vercel.app
 
 ## Folder Structure
 - `src/app/` - Application routes and pages (organized by user roles and features)
