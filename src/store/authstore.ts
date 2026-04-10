@@ -6,7 +6,7 @@ export type User ={
     id: string;
     name:string;
     email:string;
-    role:'ADMIN' | 'SELLER' |'CUSTOMER';
+    role:'ADMIN' | 'SELLER' | 'CUSTOMER' | 'SUPER_ADMIN' | 'DELIVERY_MAN';
     image?:string;
 }
 

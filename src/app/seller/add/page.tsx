@@ -90,51 +90,51 @@ export default function AddPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-6 max-w-2xl bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
       <h1 className="text-2xl font-bold mb-6">Add Medicine</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Medicine Name */}
         <div>
-          <Label>Medicine Name</Label>
-          <Input name="medicineName" required />
+          <Label className="text-gray-900 dark:text-white">Medicine Name</Label>
+          <Input name="medicineName" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Description */}
         <div>
-          <Label>Description</Label>
-          <Input name="description" required />
+          <Label className="text-gray-900 dark:text-white">Description</Label>
+          <Input name="description" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Price */}
         <div>
-          <Label>Price</Label>
-          <Input name="price" type="number" step="0.01" required />
+          <Label className="text-gray-900 dark:text-white">Price</Label>
+          <Input name="price" type="number" step="0.01" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Stock */}
         <div>
-          <Label>Stock</Label>
-          <Input name="stock" type="number" required />
+          <Label className="text-gray-900 dark:text-white">Stock</Label>
+          <Input name="stock" type="number" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Manufacturer */}
         <div>
-          <Label>Manufacturer</Label>
-          <Input name="manufacturer" required />
+          <Label className="text-gray-900 dark:text-white">Manufacturer</Label>
+          <Input name="manufacturer" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Category Dropdown */}
         <div>
-          <Label htmlFor="categoryId">Category</Label>
+          <Label htmlFor="categoryId" className="text-gray-900 dark:text-white">Category</Label>
           {loadingCategories ? (
-            <p className="text-sm text-gray-500">Loading categories...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading categories...</p>
           ) : (
             <select
               id="categoryId"
               name="categoryId"
               required
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
               <option value="">Select a category</option>
               {categories.map((category) => (
@@ -148,16 +148,16 @@ export default function AddPage() {
 
         {/* Image URL */}
         <div>
-          <Label>Image URL</Label>
-          <Input name="imageUrl" />
+          <Label className="text-gray-900 dark:text-white">Image URL</Label>
+          <Input name="imageUrl" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
         </div>
 
         {/* Buttons */}
         <div className="flex gap-2">
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white">
             {loading ? "Adding..." : "Add Medicine"}
           </Button>
-          <Button type="button" onClick={() => router.back()}>
+          <Button type="button" onClick={() => router.back()} variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
             Cancel
           </Button>
         </div>

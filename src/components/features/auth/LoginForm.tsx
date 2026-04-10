@@ -23,7 +23,7 @@ export default function LoginForm() {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+        `/api/auth/login`,
         { email, password },
         { withCredentials: true }
       );
@@ -84,17 +84,17 @@ export default function LoginForm() {
         type="email"
         placeholder="email"
         onChange={(e) => setemail(e.target.value)}
-        className="input"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
         required
       />
       <input
         type="password"
         placeholder="password"
         onChange={(e) => setpassword(e.target.value)}
-        className="input"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
         required
       />
-      <button className="btn-primary w-full" disabled={loading}>{loading ? "Logging in..." : "Login"} </button>
+      <button className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50" disabled={loading}>{loading ? "Logging in..." : "Login"} </button>
     </form>
   );
 }

@@ -168,10 +168,10 @@ export default function ProfilePage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'bg-red-100 text-red-800';
-      case 'SELLER': return 'bg-blue-100 text-blue-800';
-      case 'CUSTOMER': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ADMIN': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'SELLER': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'CUSTOMER': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -181,24 +181,24 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] bg-white dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading profile...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences</p>
         </div>
-        <Badge className={getRoleColor(profile.role)}>
+        <Badge className={`${getRoleColor(profile.role)} dark:bg-opacity-20 dark:text-opacity-90`}>
           {profile.role}
         </Badge>
       </div>
@@ -432,34 +432,34 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="flex items-center gap-4 p-6">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <ShoppingBag className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <ShoppingBag className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">12</p>
-                  <p className="text-sm text-gray-600">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">12</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex items-center gap-4 p-6">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CreditCard className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <CreditCard className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">$1,250</p>
-                  <p className="text-sm text-gray-600">Total Spent</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">$1,250</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex items-center gap-4 p-6">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Settings className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">Active</p>
-                  <p className="text-sm text-gray-600">Account Status</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">Active</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Account Status</p>
                 </div>
               </CardContent>
             </Card>

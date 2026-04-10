@@ -2,6 +2,7 @@
 
 import { Menu, LogOut } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authstore";
 import { toast } from "sonner";
@@ -110,7 +111,7 @@ const Navbar = ({
   const handleLogout = async () => {
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/logout`,
+        `/api/auth/logout`,
         {},
         { withCredentials: true }
       );
@@ -138,10 +139,12 @@ const Navbar = ({
           <div className="flex items-center gap-6">
             {/* Logo */}
             <Link href={logo.url} className="flex items-center gap-2 ">
-              <img
+              <Image
                 src={logo.src}
-                className="max-h-8 dark:invert"
                 alt={logo.alt}
+                width={32}
+                height={32}
+                className="max-h-8 w-auto dark:invert"
               />
               <span className="text-lg tracking-tighter font-bold">
                 {logo.title}
@@ -184,10 +187,12 @@ const Navbar = ({
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href={logo.url} className="flex items-center gap-2">
-              <img
+              <Image
                 src={logo.src}
-                className="max-h-8 dark:invert"
                 alt={logo.alt}
+                width={32}
+                height={32}
+                className="max-h-8 w-auto dark:invert"
               />
             </Link>
             <div className="flex items-center gap-2">
@@ -203,10 +208,12 @@ const Navbar = ({
                 <SheetHeader>
                   <SheetTitle>
                     <a href={logo.url} className="flex items-center gap-2">
-                      <img
+                      <Image
                         src={logo.src}
-                        className="max-h-8 dark:invert"
                         alt={logo.alt}
+                        width={32}
+                        height={32}
+                        className="max-h-8 w-auto dark:invert"
                       />
                     </a>
                   </SheetTitle>

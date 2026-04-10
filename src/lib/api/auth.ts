@@ -3,7 +3,7 @@ import { nextCookies } from "better-auth/next-js";
 import axios from 'axios';
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL ,
+    baseURL: "/api/auth",
     credentials:"include",
     plugins:[
        nextCookies()
@@ -15,7 +15,7 @@ export const authClient = createAuthClient({
 export const updateUserProfile = async (data: { name?: string; email?: string; image?: string }) => {
     try {
         const response = await axios.patch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/me`,
+            `/api/user/me`,
             data,
             { withCredentials: true }
         );
@@ -31,7 +31,7 @@ export const updateUserProfile = async (data: { name?: string; email?: string; i
 export const changeUserPassword = async (data: { currentPassword: string; newPassword: string }) => {
     try {
         const response = await axios.patch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/me/changed-password`,
+            `/api/user/me/changed-password`,
             data,
             { withCredentials: true }
         );

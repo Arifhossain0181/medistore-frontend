@@ -75,18 +75,18 @@ export default function SellerMedicinesPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Medicines</h1>
-        <Button onClick={() => router.push("/seller/add")}>
+        <Button onClick={() => router.push("/seller/add")} className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white">
           + Add Medicine
         </Button>
       </div>
 
       {loading ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
-            <thead className="bg-gray-100">
+          <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
+            <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
                 <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-16" /></th>
@@ -95,7 +95,7 @@ export default function SellerMedicinesPage() {
                 <th className="px-4 py-3 text-left"><Skeleton className="h-4 w-20" /></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
               {[...Array(5)].map((_, i) => (
                 <tr key={i}>
                   <td className="px-4 py-4"><Skeleton className="h-4 w-32" /></td>
@@ -113,36 +113,37 @@ export default function SellerMedicinesPage() {
           </table>
         </div>
       ) : medicines.length === 0 ? (
-        <p className="text-gray-500">No medicines found</p>
+        <p className="text-gray-500 dark:text-gray-400">No medicines found</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border rounded-lg">
-            <thead className="bg-gray-100">
+          <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg">
+            <thead className="bg-gray-100 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Manufacturer</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Price</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Stock</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Manufacturer</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
               {medicines.map((medicine) => (
-                <tr key={medicine.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4 text-sm">{medicine.name}</td>
-                  <td className="px-4 py-4 text-sm">${medicine.price}</td>
-                  <td className="px-4 py-4 text-sm">
+                <tr key={medicine.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">{medicine.name}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">${medicine.price}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                     {editingStock === medicine.id ? (
                       <div className="flex gap-2">
                         <Input
                           type="number"
                           value={stockValue}
                           onChange={(e) => setStockValue(e.target.value)}
-                          className="w-20"
+                          className="w-20 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
                         />
                         <Button 
                           size="sm" 
                           onClick={() => handleUpdateStock(medicine.id)}
+                          className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white"
                         >
                           Save
                         </Button>
@@ -150,13 +151,14 @@ export default function SellerMedicinesPage() {
                           size="sm" 
                           variant="outline"
                           onClick={() => setEditingStock(null)}
+                          className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
                           Cancel
                         </Button>
                       </div>
                     ) : (
                       <span 
-                        className="cursor-pointer hover:text-blue-600"
+                        className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
                         onClick={() => {
                           setEditingStock(medicine.id);
                           setStockValue(medicine.stock.toString());
@@ -166,17 +168,17 @@ export default function SellerMedicinesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-4 text-sm">{medicine.manufacturer}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">{medicine.manufacturer}</td>
                   <td className="px-4 py-4 text-sm">
                     <button
                       onClick={() => router.push(`/seller/medicines/edit?id=${medicine.id}`)}
-                      className="text-blue-600 hover:underline mr-3"
+                      className="text-blue-600 dark:text-blue-400 hover:underline mr-3"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(medicine.id, medicine.name)}
-                      className="text-red-600 hover:underline"
+                      className="text-red-600 dark:text-red-400 hover:underline"
                     >
                       Delete
                     </button>

@@ -1,9 +1,7 @@
 import axios from 'axios';
-
-const API = process.env.NEXT_PUBLIC_BACKEND_URL 
 export async function getAllMedicines(){
-    console.log("Fetching from:", `${API}/api/medicines`)
-    const res = await fetch(`${API}/api/medicines`, {
+    console.log("Fetching from:", `/api/medicines`)
+    const res = await fetch(`/api/medicines`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -24,8 +22,8 @@ export async function getAllMedicines(){
 }
 
 export async function getSingleMedicine(id: string){
-    console.log("Fetching from:", `${API}/api/medicines/${id}`)
-    const res = await fetch(`${API}/api/medicines/${id}`, {
+    console.log("Fetching from:", `/api/medicines/${id}`)
+    const res = await fetch(`/api/medicines/${id}`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -48,7 +46,7 @@ export async function getSingleMedicine(id: string){
 export const fetchCategories = {
   getAllCategories: async function() {
     try {
-      const res = await fetch(`${API}/api/categories`, {
+      const res = await fetch(`/api/categories`, {
         credentials: "include",
         cache: "no-cache"
       });
@@ -62,9 +60,9 @@ export const fetchCategories = {
 
 export async function getAllCategories() {
   try {
-    console.log("Fetching categories from:", `${API}/api/categories`);
+    console.log("Fetching categories from:", `/api/categories`);
     
-    const res = await fetch(`${API}/api/categories`, {
+    const res = await fetch(`/api/categories`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -81,7 +79,6 @@ export async function getAllCategories() {
     return response.data || response;
   } catch (error) {
     console.error("Error fetching categories:", error);
-    console.error("API URL:", API);
     throw error;
   }
 }
@@ -89,7 +86,7 @@ export async function getAllCategories() {
 export async function createCategory(name: string) {
   try {
     const res = await axios.post(
-      `${API}/api/categories`,
+      `/api/categories`,
       { name },
       { withCredentials: true }
     );
@@ -107,7 +104,7 @@ export async function createCategory(name: string) {
 export async function updateCategory(id: string, name: string) {
   try {
     const res = await axios.patch(
-      `${API}/api/categories/${id}`,
+      `/api/categories/${id}`,
       { name },
       { withCredentials: true }
     );
@@ -125,7 +122,7 @@ export async function updateCategory(id: string, name: string) {
 export async function deleteCategory(id: string) {
   try {
     const res = await axios.delete(
-      `${API}/api/categories/${id}`,
+      `/api/categories/${id}`,
       { withCredentials: true }
     );
     return res.data.data || res.data;
@@ -140,7 +137,7 @@ export async function deleteCategory(id: string) {
 }
 export async function getAllmedicines(){
     try{
-        const res = await fetch(`${API}/api/medicines`, {
+        const res = await fetch(`/api/medicines`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -157,7 +154,7 @@ export async function getAllmedicines(){
 export async function getAlluser(){
     try {
         const res = await axios.get(
-            `${API}/api/admin/users`,
+            `/api/admin/users`,
             { withCredentials: true }
         );
         return res.data.data || res.data;
@@ -174,7 +171,7 @@ export async function getAlluser(){
 // Update medicine
 export async function updateMedicine(id: string, data:string | number | object) {
     try {
-        const url = `${API}/api/medicines/${id}`;
+        const url = `/api/medicines/${id}`;
         console.log('Updating medicine:', { url, id, data });
         
         const res = await fetch(url, {
@@ -204,7 +201,7 @@ export async function updateMedicine(id: string, data:string | number | object) 
 export async function deleteMedicine(id: string) {
     try {
         const res = await axios.delete(
-            `${API}/api/medicines/${id}`,
+            `/api/medicines/${id}`,
             { withCredentials: true }
         );
         return res.data.data || res.data;
@@ -221,7 +218,7 @@ export async function deleteMedicine(id: string) {
 export async function banUser(userId: string) {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}/ban`,
+      `/api/admin/users/${userId}/ban`,
             { isBanned: true },
             { withCredentials: true }
         );
@@ -239,7 +236,7 @@ export async function banUser(userId: string) {
 export async function unbanUser(userId: string) {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}/ban`,
+      `/api/admin/users/${userId}/ban`,
             { isBanned: false },
             { withCredentials: true }
         );
@@ -257,7 +254,7 @@ export async function unbanUser(userId: string) {
 export async function updateUserRole(userId: string, role: "CUSTOMER" | "SELLER" | "ADMIN") {
     try {
         const res = await axios.patch(
-            `${API}/api/admin/users/${userId}/role`,
+      `/api/admin/users/${userId}/role`,
             { role },
             { withCredentials: true }
         );

@@ -24,7 +24,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Welcome Section */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-6 md:p-8 text-white">
+      <div className="rounded-lg bg-linear-to-r from-blue-500 to-purple-600 p-6 md:p-8 text-white">
         <h2 className="text-2xl md:text-3xl font-bold mb-2">
           Welcome back, {user.name}!
         </h2>
@@ -143,6 +143,83 @@ export default function DashboardPage() {
               >
                 <h4 className="font-semibold mb-2">All Orders</h4>
                 <p className="text-sm text-muted-foreground">View all orders</p>
+              </Link>
+            </>
+          )}
+
+          {user.role === "SUPER_ADMIN" && (
+            <>
+              <Link
+                href="/super-admin/medicines"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">All Medicines</h4>
+                <p className="text-sm text-muted-foreground">
+                  Manage all medicines
+                </p>
+              </Link>
+              <Link
+                href="/super-admin/users"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">All Users</h4>
+                <p className="text-sm text-muted-foreground">View system users</p>
+              </Link>
+              <Link
+                href="/super-admin/orders"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">All Orders</h4>
+                <p className="text-sm text-muted-foreground">View all orders</p>
+              </Link>
+              <Link
+                href="/super-admin/admins"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">Admins</h4>
+                <p className="text-sm text-muted-foreground">Manage admins</p>
+              </Link>
+              <Link
+                href="/super-admin/reports"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">Reports</h4>
+                <p className="text-sm text-muted-foreground">View system reports</p>
+              </Link>
+              <Link
+                href="/super-admin/settings"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">Settings</h4>
+                <p className="text-sm text-muted-foreground">System settings</p>
+              </Link>
+            </>
+          )}
+
+          {user.role === "DELIVERY_MAN" && (
+            <>
+              <Link
+                href="/delivery/orders"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">All Deliveries</h4>
+                <p className="text-sm text-muted-foreground">
+                  View all deliveries
+                </p>
+              </Link>
+              <Link
+                href="/delivery/active"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">Active Orders</h4>
+                <p className="text-sm text-muted-foreground">Current deliveries</p>
+              </Link>
+              <Link
+                href="/delivery/completed"
+                className="rounded-lg border bg-muted/50 p-4 hover:bg-accent transition-colors"
+              >
+                <h4 className="font-semibold mb-2">Completed</h4>
+                <p className="text-sm text-muted-foreground">Completed deliveries</p>
               </Link>
             </>
           )}

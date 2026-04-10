@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const API = process.env.NEXT_PUBLIC_BACKEND_URL;
-
 // Simple interface for medicine data
 export interface MedicineData {
     name: string;
@@ -17,7 +15,7 @@ export interface MedicineData {
 export async function addmedicine(med: MedicineData) {
     try {
         const res = await axios.post(
-            `${API}/api/medicines`,
+            `/api/medicines`,
             med,
             { withCredentials: true }
         );

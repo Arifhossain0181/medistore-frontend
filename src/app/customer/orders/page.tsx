@@ -41,13 +41,13 @@ export default function CustomerOrdersPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
       <h1 className="text-3xl font-bold mb-6">My Orders</h1>
 
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white p-6 rounded-lg shadow">
+            <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
               <div className="flex justify-between items-start mb-3">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-20" />
@@ -67,8 +67,8 @@ export default function CustomerOrdersPage() {
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No orders yet</p>
-          <Button onClick={() => router.push("/shop")}>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">No orders yet</p>
+          <Button onClick={() => router.push("/shop")} className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white">
             Start Shopping
           </Button>
         </div>
@@ -77,17 +77,17 @@ export default function CustomerOrdersPage() {
           {orders.map((order) => (
             <div
               key={order.id}
-              className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md dark:hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => router.push(`/customer/orders/${order.id}`)}
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="text-sm text-gray-500">Order ID</p>
-                  <p className="font-mono text-sm">{order.id.slice(0, 8)}...</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Order ID</p>
+                  <p className="font-mono text-sm text-gray-900 dark:text-white">{order.id.slice(0, 8)}...</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Total</p>
-                  <p className="font-bold text-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
+                  <p className="font-bold text-lg text-gray-900 dark:text-white">
                     ${order.total ? order.total.toFixed(2) : '0.00'}
                   </p>
                 </div>
@@ -95,19 +95,19 @@ export default function CustomerOrdersPage() {
 
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p className="text-sm">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Date</p>
+                  <p className="text-sm text-gray-900 dark:text-white">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : ''}
-                      ${order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' : ''}
-                      ${order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800' : ''}
-                      ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : ''}
-                      ${order.status === 'CANCELLED' ? 'bg-red-100 text-red-800' : ''}
+                      ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
+                      ${order.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''}
+                      ${order.status === 'SHIPPED' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' : ''}
+                      ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
+                      ${order.status === 'CANCELLED' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''}
                     `}
                   >
                     {order.status}
@@ -116,7 +116,7 @@ export default function CustomerOrdersPage() {
               </div>
 
               {order.items && order.items.length > 0 && (
-                <p className="text-sm text-gray-500 mt-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                   {order.items.length} item{order.items.length > 1 ? 's' : ''}
                 </p>
               )}

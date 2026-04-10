@@ -11,6 +11,8 @@ import {
   Users,
   LayoutDashboard,
   PlusCircle,
+  Truck,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -59,6 +61,26 @@ const adminMenuItems = [
   { title: "Categories", url: "/admin/categories", icon: Settings },
 ];
 
+const superAdminMenuItems = [
+  {title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "All Medicines", url: "/super-admin/medicines", icon: Package },
+  { title: "All Orders", url: "/super-admin/orders", icon: FileText },
+  { title: "All Users", url: "/super-admin/users", icon: Users },
+  { title: "Admins", url: "/super-admin/admins", icon: Shield },
+  { title: "Reports", url: "/super-admin/reports", icon: FileText },
+  { title: "Settings", url: "/super-admin/settings", icon: Settings },
+];
+
+const deliveryManMenuItems = [
+  {title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Deliveries", url: "/delivery/orders", icon: Truck },
+  { title: "Active Orders", url: "/delivery/active", icon: Package },
+  { title: "Completed", url: "/delivery/completed", icon: FileText },
+  { title: "Profile", url: "/delivery/profile", icon: User },
+];
+
 export function AppSidebar() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
@@ -73,6 +95,12 @@ export function AppSidebar() {
   } else if (user?.role === "ADMIN") {
     menuItems = adminMenuItems;
     dashboardTitle = "Admin Dashboard";
+  } else if (user?.role === "SUPER_ADMIN") {
+    menuItems = superAdminMenuItems;
+    dashboardTitle = "Super Admin Dashboard";
+  } else if (user?.role === "DELIVERY_MAN") {
+    menuItems = deliveryManMenuItems;
+    dashboardTitle = "Delivery Management";
   }
 
   return (
