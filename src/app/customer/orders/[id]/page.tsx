@@ -21,7 +21,8 @@ interface OrderItem {
 
 interface OrderDetails {
   id: string;
-  total: number;
+  total?: number;
+  totalAmount?: number;
   status: string;
   createdAt: string;
   shippingAddress?: string;
@@ -126,7 +127,7 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Total:</span>
                 <span className="font-bold text-lg text-gray-900 dark:text-white">
-                  ${order.total ? order.total.toFixed(2) : '0.00'}
+                  ${Number(order.total ?? order.totalAmount ?? 0).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -190,7 +191,7 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
           <div className="flex justify-between items-center">
             <span className="text-lg font-semibold text-gray-900 dark:text-white">Order Total:</span>
             <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-              ${order.total ? order.total.toFixed(2) : '0.00'}
+              ${Number(order.total ?? order.totalAmount ?? 0).toFixed(2)}
             </span>
           </div>
         </div>

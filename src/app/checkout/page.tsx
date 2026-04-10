@@ -2,19 +2,28 @@
 
 import { useAuthStore } from "@/store/authstore";
 import { useCartStore } from "@/store/cartstore";
-import { createOrder } from "@/lib/api/order";
+import { checkDeliveryServiceability, type DeliveryCoverageCheck } from "@/lib/api/delivery";
+import { createCartCheckoutSession } from "@/lib/api/payment";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Input } from "@/nextjs/ui/input";
 import { Label } from "@/nextjs/ui/label";
 import { Button } from "@/nextjs/ui/button";
+import { toast } from "sonner";
+import { DELIVERY_AREAS } from "@/lib/delivery-areas";
 
 export default function CheckoutPage() {
   const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const router = useRouter();
-  const { items, getTotalPrice, clearCart } = useCartStore();
+  const { items, getTotalPrice } = useCartStore();
   
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [serviceability, setServiceability] = useState<DeliveryCoverageCheck | null>(null);
+  const [division, setDivision] = useState("");
+  const [district, setDistrict] = useState("");
+  const [thana, setThana] = useState("");
   const [shippingInfo, setShippingInfo] = useState({
     address: "",
     city: "",
@@ -22,14 +31,48 @@ export default function CheckoutPage() {
     phone: ""
   });
 
+  const selectedDivision = DELIVERY_AREAS.find((area) => area.value === division);
+  const districtOptions = selectedDivision?.districts ?? [];
+  const selectedDistrict = districtOptions.find((item) => item.value === district);
+  const thanaOptions = selectedDistrict?.thanas ?? [];
+
+  const shippingAddress = useMemo(
+    () => `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}`.trim(),
+    [shippingInfo.address, shippingInfo.city, shippingInfo.postalCode],
+  );
+
   useEffect(() => {
+    const loadCoverage = async () => {
+      if (!division || !district || !thana) {
+        setServiceability(null);
+        return;
+      }
+
+      setChecking(true);
+      try {
+        const result = await checkDeliveryServiceability(division, district, thana);
+        setServiceability(result);
+      } catch (error) {
+        console.error("Serviceability check failed:", error);
+        setServiceability(null);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    loadCoverage();
+  }, [division, district, thana]);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!user || user.role !== "CUSTOMER") {
       router.replace("/login");
     }
     if (items.length === 0) {
       router.replace("/");
     }
-  }, [user, router, items]);
+  }, [hasHydrated, user, router, items]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setShippingInfo({
@@ -40,10 +83,14 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
     try {
-      // Prepare order data
+      if (!serviceability?.serviceable) {
+        toast.error("Selected area is not serviceable yet.");
+        return;
+      }
+
+      setLoading(true);
+
       const orderData = {
         items: items.map(item => ({
           medicineId: item.id,
@@ -51,26 +98,41 @@ export default function CheckoutPage() {
           price: item.price
         })),
         total: getTotalPrice(),
-        shippingAddress: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.postalCode}`,
-        phone: shippingInfo.phone
+        shippingAddress,
+        phone: shippingInfo.phone,
+        division,
+        district,
+        thana,
       };
 
-      const result = await createOrder(orderData);
-      console.log("Order created:", result);
-      
-      // Clear cart and redirect
-      clearCart();
-      alert("Order placed successfully!");
-      router.push("/customer/orders");
+      sessionStorage.setItem("pendingOrderData", JSON.stringify(orderData));
+
+      const session = await createCartCheckoutSession(
+        items.map((item) => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      );
+
+      if (!session.url) {
+        throw new Error("Stripe checkout URL not found");
+      }
+
+      window.location.href = session.url;
     } catch (error) {
       console.error("Order error:", error);
-      alert("Failed to place order. Please try again.");
+      toast.error("Failed to start payment. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   // Only allow checkout if user is CUSTOMER
+  if (!hasHydrated) {
+    return <div>Loading...</div>;
+  }
+
   if (!user || user.role !== "CUSTOMER") {
     return <div>Redirecting...</div>;
   }
@@ -80,7 +142,7 @@ export default function CheckoutPage() {
   }
 
   const total = getTotalPrice();
-  const shipping = 5.00; // Fixed shipping cost
+  const shipping = serviceability?.fee ?? 0;
   const grandTotal = total + shipping;
 
   return (
@@ -93,6 +155,84 @@ export default function CheckoutPage() {
           <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
           
           <form onSubmit={handlePlaceOrder} className="space-y-4">
+            <div className="space-y-2 rounded-lg border p-4">
+              <p className="text-sm font-semibold text-slate-700">Delivery Area</p>
+              <div>
+                <Label htmlFor="division">Division</Label>
+                <select
+                  id="division"
+                  value={division}
+                  onChange={(e) => {
+                    setDivision(e.target.value);
+                    setDistrict("");
+                    setThana("");
+                  }}
+                  className="w-full rounded-md border px-3 py-2"
+                  required
+                >
+                  <option value="">Select division</option>
+                  {DELIVERY_AREAS.map((area) => (
+                    <option key={area.value} value={area.value}>
+                      {area.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="district">District</Label>
+                <select
+                  id="district"
+                  value={district}
+                  onChange={(e) => {
+                    setDistrict(e.target.value);
+                    setThana("");
+                  }}
+                  className="w-full rounded-md border px-3 py-2"
+                  required
+                  disabled={!division}
+                >
+                  <option value="">Select district</option>
+                  {districtOptions.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="thana">Thana</Label>
+                <select
+                  id="thana"
+                  value={thana}
+                  onChange={(e) => setThana(e.target.value)}
+                  className="w-full rounded-md border px-3 py-2"
+                  required
+                  disabled={!district}
+                >
+                  <option value="">Select thana</option>
+                  {thanaOptions.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="text-sm text-slate-600">
+                {checking ? "Checking serviceability..." : serviceability ? (
+                  <>
+                    <p>Mode: {serviceability.mode}</p>
+                    <p>Delivery fee: ৳{serviceability.fee.toFixed(2)}</p>
+                    <p>ETA: {serviceability.etaDays ?? "-"} day(s)</p>
+                  </>
+                ) : (
+                  <p>Select division, district and thana to check serviceability.</p>
+                )}
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="address">Address</Label>
               <Input
@@ -144,10 +284,10 @@ export default function CheckoutPage() {
 
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || checking || !serviceability?.serviceable}
               className="w-full"
             >
-              {loading ? "Placing Order..." : "Place Order"}
+              {loading ? "Redirecting..." : "Continue to Secure Payment"}
             </Button>
           </form>
         </div>
@@ -192,7 +332,7 @@ export default function CheckoutPage() {
               <strong>Order includes {items.length} items</strong>
             </p>
             <p className="text-sm text-gray-600 mt-2">
-              Payment on delivery (Cash on Delivery)
+              Online card payment only
             </p>
           </div>
         </div>

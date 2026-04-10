@@ -37,6 +37,9 @@ export async function createOrder(orderData: {
   total: number;
   shippingAddress: string;
   phone: string;
+  division: string;
+  district: string;
+  thana: string;
 }) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
@@ -126,4 +129,28 @@ export async function updateOrderStatus(id: string, status: string) {
   const result = await res.json();
   console.log('Frontend: Success response:', result);
   return result;
+}
+
+export async function updateCourierBooking(id: string, courierPartner: string, trackingNumber: string) {
+  const res = await fetch(`${API_BASE_URL}/api/orders/admin/${id}/courier`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ courierPartner, trackingNumber }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    let error;
+    try {
+      error = JSON.parse(errorText);
+    } catch {
+      error = { message: errorText };
+    }
+    throw new Error(error.message || "Failed to update courier booking");
+  }
+
+  return res.json();
 }

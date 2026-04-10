@@ -13,7 +13,9 @@ export type User ={
 type AuthState = {
     user :User | null;
     isAuthenticated:boolean;
+    hasHydrated: boolean;
     setUser: (user:User | null) =>void;
+    setHasHydrated: (value: boolean) => void;
     logout:()=> void
 }
 
@@ -22,11 +24,15 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
+            hasHydrated: false,
             setUser: (user) => {
                 set({
                     user,
                     isAuthenticated: !!user,
                 })
+            },
+            setHasHydrated: (value) => {
+                set({ hasHydrated: value })
             },
             logout: () => {
                 set({ user: null, isAuthenticated: false })
@@ -35,6 +41,9 @@ export const useAuthStore = create<AuthState>()(
         {
             name: 'medistore-auth',
             storage: createJSONStorage(() => localStorage),
+            onRehydrateStorage: () => (state) => {
+                state?.setHasHydrated(true);
+            },
         }
     )
 )

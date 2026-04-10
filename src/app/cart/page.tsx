@@ -70,7 +70,7 @@ export default function CartPage() {
       {user?.role === "CUSTOMER" ? (
         <button
           className="w-full py-2 bg-blue-600 text-white font-semibold rounded disabled:bg-gray-400"
-          onClick={() => router.push("/customer/checkout")}
+          onClick={() => router.push("/checkout")}
           disabled={items.length === 0}
         >Proceed to Checkout</button>
       ) : (

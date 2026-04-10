@@ -251,7 +251,10 @@ export async function unbanUser(userId: string) {
     }
 }
 
-export async function updateUserRole(userId: string, role: "CUSTOMER" | "SELLER" | "ADMIN") {
+export async function updateUserRole(
+  userId: string,
+  role: "CUSTOMER" | "SELLER" | "ADMIN" | "DELIVERY_MAN",
+) {
     try {
         const res = await axios.patch(
       `/api/admin/users/${userId}/role`,
@@ -268,6 +271,66 @@ export async function updateUserRole(userId: string, role: "CUSTOMER" | "SELLER"
         throw error;
     }
 }
+
+    export type DeliveryManApplication = {
+      id: string;
+      status: "PENDING" | "APPROVED" | "REJECTED";
+      phone: string;
+      nidNumber: string;
+      licenseNumber: string;
+      vehicleType: string;
+      vehicleRegistrationNo: string;
+      deliveryArea: string;
+      currentAddress: string;
+      emergencyContactName: string;
+      emergencyContactPhone: string;
+      rejectionReason?: string | null;
+      reviewedAt?: string | null;
+      createdAt: string;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+        status?: string | null;
+      };
+    };
+
+    export async function getDeliveryManApplications() {
+      try {
+        const res = await axios.get(`/api/admin/delivery-man-applications`, { withCredentials: true });
+        return (res.data.data || res.data) as DeliveryManApplication[];
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Error fetching delivery man applications:", error.response?.data || error.message);
+        } else {
+          console.error("Error fetching delivery man applications:", error);
+        }
+        throw error;
+      }
+    }
+
+    export async function reviewDeliveryManApplication(
+      applicationId: string,
+      action: "APPROVE" | "REJECT",
+      rejectionReason?: string,
+    ) {
+      try {
+        const res = await axios.patch(
+          `/api/admin/delivery-man-applications/${applicationId}/review`,
+          { action, rejectionReason },
+          { withCredentials: true },
+        );
+        return res.data.data || res.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error("Error reviewing delivery man application:", error.response?.data || error.message);
+        } else {
+          console.error("Error reviewing delivery man application:", error);
+        }
+        throw error;
+      }
+    }
 
 
 

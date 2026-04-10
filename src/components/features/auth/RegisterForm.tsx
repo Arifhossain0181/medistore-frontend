@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { toast } from "sonner";
 import axios from "axios";
+import Link from "next/link";
 
 export default function RegisterForm() {
   const formSchema = z.object({
@@ -35,8 +36,7 @@ export default function RegisterForm() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const registerUser = async () => {
     setLoading(true);
 
     try {
@@ -50,7 +50,7 @@ export default function RegisterForm() {
           name: validatedData.name,
           password: validatedData.password,
           phone: validatedData.phone,
-          role: "CUSTOMER", // All users register as CUSTOMER
+          role: "CUSTOMER",
         },
         { withCredentials: true },
       );
@@ -70,6 +70,11 @@ export default function RegisterForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await registerUser();
   };
 
   return (
@@ -111,6 +116,13 @@ export default function RegisterForm() {
       <button type="submit" className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 mt-2" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </button>
+      <Link
+        href="/auth/delivery-man-registration"
+        className="block w-full rounded-md bg-emerald-600 py-2 px-4 text-center text-white hover:bg-emerald-700"
+      >
+        Apply To Be A Delivery Man
+      </Link>
+      <p className="text-xs text-gray-500">Delivery Man application এ admin approve/reject flow থাকবে.</p>
     </form>
   );
 }

@@ -39,7 +39,7 @@ export default function LoginForm() {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: (user.role || 'CUSTOMER') as 'ADMIN' | 'SELLER' | 'CUSTOMER',
+          role: (user.role || 'CUSTOMER') as 'ADMIN' | 'SELLER' | 'CUSTOMER' | 'SUPER_ADMIN' | 'DELIVERY_MAN',
         };
         
         console.log("Final User Data:", userData);
@@ -64,6 +64,10 @@ export default function LoginForm() {
           router.push("/");
         } else if (userData.role === "SELLER") {
           router.push("/");
+        } else if (userData.role === "SUPER_ADMIN") {
+          router.push("/super-admin/dashboard");
+        } else if (userData.role === "DELIVERY_MAN") {
+          router.push("/delivery/dashboard");
         } else {
           router.push("/");
         }

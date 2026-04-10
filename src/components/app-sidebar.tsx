@@ -30,7 +30,6 @@ import {
 import { useAuthStore } from "@/store/authstore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { title } from "process";
 
 // Menu items based on user role
 const customerMenuItems = [
@@ -38,7 +37,7 @@ const customerMenuItems = [
 
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
-  { title: "Checkout", url: "/customer/checkout", icon: ShoppingCart },
+  { title: "Checkout", url: "/checkout", icon: ShoppingCart },
   { title: "My Orders", url: "/customer/orders", icon: Package },
   { title: "Profile", url: "/customer/profile", icon: User },
 ];
@@ -46,7 +45,7 @@ const customerMenuItems = [
 const sellerMenuItems = [
     {title: "Home", url: "/", icon: LayoutDashboard },
 
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/seller/dashboard", icon: LayoutDashboard },
   { title: "Manage Medicines", url: "/seller/medicines", icon: Package },
   { title: "Add Medicine", url: "/seller/add", icon: PlusCircle },
   { title: "Orders", url: "/seller/orders", icon: FileText },
@@ -54,16 +53,17 @@ const sellerMenuItems = [
 
 const adminMenuItems = [
   {title: "Home", url: "/", icon: LayoutDashboard },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Medicines", url: "/admin/medicines", icon: Package },
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Users", url: "/admin/users", icon: Users },
+  { title: "Delivery Applications", url: "/admin/delivery-applications", icon: Truck },
   { title: "Categories", url: "/admin/categories", icon: Settings },
 ];
 
 const superAdminMenuItems = [
   {title: "Home", url: "/", icon: LayoutDashboard },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/super-admin/dashboard", icon: LayoutDashboard },
   { title: "All Medicines", url: "/super-admin/medicines", icon: Package },
   { title: "All Orders", url: "/super-admin/orders", icon: FileText },
   { title: "All Users", url: "/super-admin/users", icon: Users },
@@ -74,7 +74,7 @@ const superAdminMenuItems = [
 
 const deliveryManMenuItems = [
   {title: "Home", url: "/", icon: LayoutDashboard },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/delivery/dashboard", icon: LayoutDashboard },
   { title: "Deliveries", url: "/delivery/orders", icon: Truck },
   { title: "Active Orders", url: "/delivery/active", icon: Package },
   { title: "Completed", url: "/delivery/completed", icon: FileText },

@@ -4,11 +4,13 @@ import { fetchOrders, updateOrderStatus } from "@/lib/api/order";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { assignOrderToDeliveryMan, getDeliveryMen, type DeliveryMan } from "@/lib/api/delivery";
 
 interface Order {
   id: string;
   userId: string;
   total: number;
+  totalAmount?: number;
   status: string;
   createdAt: string;
   user?: {
@@ -18,31 +20,45 @@ interface Order {
 }
 
 const STATUSES = [
-  "PLACED",
   "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
   "CANCELLED",
 ];
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [deliveryMen, setDeliveryMen] = useState<DeliveryMan[]>([]);
+  const [selectedDeliveryMan, setSelectedDeliveryMan] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    const getOrders = async () => {
-      const { data, error } = await fetchOrders.getSellerOrders();
-      if (error) {
-        toast.error("Failed to load orders");
-        setLoading(false);
-      } else {
-        const ordersData = data?.data || data || [];
-        setOrders(Array.isArray(ordersData) ? ordersData : []);
+    const loadPageData = async () => {
+      setLoading(true);
+      try {
+        const [{ data, error }, deliveryMenData] = await Promise.all([
+          fetchOrders.getSellerOrders(),
+          getDeliveryMen(),
+        ]);
+
+        if (error) {
+          toast.error("Failed to load orders");
+        } else {
+          const ordersData = data?.data || data || [];
+          setOrders(Array.isArray(ordersData) ? ordersData : []);
+        }
+
+        setDeliveryMen(deliveryMenData);
+      } catch {
+        toast.error("Failed to load dashboard data");
+      } finally {
         setLoading(false);
       }
     };
-    getOrders();
+
+    loadPageData();
   }, []);
+
+  const getOrderTotal = (order: Order) => Number(order.total ?? order.totalAmount ?? 0);
 
   const handleStatusChange = async (orderId: string, status: string) => {
     try {
@@ -55,8 +71,31 @@ export default function SellerOrdersPage() {
       );
 
       toast.success("Order status updated");
-    } catch (err) {
+    } catch {
       toast.error("Failed to update order status");
+    }
+  };
+
+  const handleAssignDelivery = async (orderId: string) => {
+    const deliveryManId = selectedDeliveryMan[orderId];
+    if (!deliveryManId) {
+      toast.error("Please choose delivery option");
+      return;
+    }
+
+    if (deliveryManId === "COURIER") {
+      toast.info("Courier selected. Complete courier booking from Admin Orders.");
+      return;
+    }
+
+    setAssigningOrderId(orderId);
+    try {
+      await assignOrderToDeliveryMan(orderId, deliveryManId);
+      toast.success("Delivery man assigned");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to assign delivery man");
+    } finally {
+      setAssigningOrderId(null);
     }
   };
 
@@ -87,7 +126,8 @@ export default function SellerOrdersPage() {
                 <th className="px-6 py-3 text-left">Total</th>
                 <th className="px-6 py-3 text-left">Status</th>
                 <th className="px-6 py-3 text-left">Date</th>
-                <th className="px-6 py-3 text-left">Action</th>
+                <th className="px-6 py-3 text-left">Delivery Assignment</th>
+                <th className="px-6 py-3 text-left">Order Action</th>
               </tr>
             </thead>
 
@@ -103,7 +143,7 @@ export default function SellerOrdersPage() {
                   </td>
 
                   <td className="px-6 py-4 font-semibold">
-                    ${order.total.toFixed(2)}
+                    ৳{getOrderTotal(order).toFixed(2)}
                   </td>
 
                   <td className="px-6 py-4">
@@ -114,6 +154,38 @@ export default function SellerOrdersPage() {
 
                   <td className="px-6 py-4">
                     {new Date(order.createdAt).toLocaleDateString()}
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedDeliveryMan[order.id] || ""}
+                        onChange={(e) =>
+                          setSelectedDeliveryMan((prev) => ({
+                            ...prev,
+                            [order.id]: e.target.value,
+                          }))
+                        }
+                        disabled={order.status === "DELIVERED" || order.status === "CANCELLED" || assigningOrderId === order.id}
+                        className="border rounded px-2 py-1 text-sm min-w-48"
+                      >
+                        <option value="">Select delivery option</option>
+                        <option value="COURIER">Courier</option>
+                        {deliveryMen.map((man) => (
+                          <option key={man.id} value={man.id}>
+                            {man.name || man.email}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => handleAssignDelivery(order.id)}
+                        disabled={order.status === "DELIVERED" || order.status === "CANCELLED" || assigningOrderId === order.id}
+                        className="border rounded px-3 py-1 text-sm bg-black text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      >
+                        {assigningOrderId === order.id ? "Assigning..." : "Assign"}
+                      </button>
+                    </div>
                   </td>
 
                   <td className="px-6 py-4">

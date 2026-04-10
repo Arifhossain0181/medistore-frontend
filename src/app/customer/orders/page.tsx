@@ -9,10 +9,18 @@ import { toast } from "sonner";
 
 interface Order {
   id: string;
-  total: number;
+  total?: number;
+  totalAmount?: number;
   status: string;
   createdAt: string;
-  items?: string[];
+  items?: Array<{
+    id: string;
+    quantity: number;
+    medicine?: {
+      id: string;
+      name: string;
+    };
+  }>;
 }
 
 export default function CustomerOrdersPage() {
@@ -88,7 +96,7 @@ export default function CustomerOrdersPage() {
                 <div className="text-right">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
                   <p className="font-bold text-lg text-gray-900 dark:text-white">
-                    ${order.total ? order.total.toFixed(2) : '0.00'}
+                    ${Number(order.total ?? order.totalAmount ?? 0).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -115,11 +123,17 @@ export default function CustomerOrdersPage() {
                 </div>
               </div>
 
-              {order.items && order.items.length > 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
-                  {order.items.length} item{order.items.length > 1 ? 's' : ''}
-                </p>
-              )}
+              {order.items && order.items.length > 0 ? (
+                <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                  <p>{order.items.length} item{order.items.length > 1 ? 's' : ''}</p>
+                  <p className="truncate">
+                    {order.items
+                      .map((item) => item.medicine?.name)
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

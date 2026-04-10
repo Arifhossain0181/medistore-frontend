@@ -92,6 +92,23 @@ export default function Mediasingle(){
         },
       })
     }
+
+    const handleBuyNow = () => {
+      if (!medicine) return;
+
+      if (!isAuthenticated) {
+        toast.error("Please login to continue", {
+          description: "You need to be logged in to make payment",
+          action: {
+            label: "Login",
+            onClick: () => router.push("/auth/login"),
+          },
+        });
+        return;
+      }
+
+      router.push(`/payment/checkout?medicineId=${medicine.id}`);
+    }
     
 
   useEffect(() => {
@@ -200,6 +217,14 @@ export default function Mediasingle(){
               >
                 <ShoppingCart className="h-5 w-5" />
                 Add to Cart
+              </Button>
+              <Button
+                variant="default"
+                size="lg"
+                className="w-full max-w-sm"
+                onClick={handleBuyNow}
+              >
+                Buy Now
               </Button>
               <Button
                 variant="outline"

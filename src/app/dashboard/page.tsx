@@ -7,16 +7,23 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, hasHydrated } = useAuthStore();
 
   useEffect(() => {
-    // Redirect to login if no user (after client-side hydration)
+    if (!hasHydrated) return;
+
+    // Redirect only after persisted auth state is restored
     if (!user) {
       router.push("/login?redirect=/dashboard");
     }
-  }, [user, router]);
+  }, [hasHydrated, user, router]);
 
-  // Show nothing during hydration or when user is not present
+  // Show nothing until hydration is complete
+  if (!hasHydrated) {
+    return null;
+  }
+
+  // Show nothing when redirecting
   if (!user) {
     return null;
   }

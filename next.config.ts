@@ -18,14 +18,20 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites(){
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+
     return [
       {
+        source: "/payment/:path*",
+        destination: "/Payment/:path*"
+      },
+      {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/:path*`
+        destination: `${backendUrl}/api/:path*`
       },
       {
         source: "/auth/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`
+        destination: `${backendUrl}/api/:path*`
       }
     ]
   }
