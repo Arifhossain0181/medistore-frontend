@@ -1,6 +1,6 @@
 "use client";
 
-import { addmedicine } from "@/lib/api/addmedicine";
+import { addmedicine, generateMedicineDescription } from "@/lib/api/addmedicine";
 import { getAllCategories } from "@/lib/api/medicine";
 import { Input } from "@/nextjs/ui/input";
 import { Label } from "@/nextjs/ui/label";
@@ -19,8 +19,11 @@ export default function AddPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [medicineName, setMedicineName] = useState("");
+  const [description, setDescription] = useState("");
 
   // Check if user is authenticated and is a SELLER
   useEffect(() => {
@@ -60,8 +63,8 @@ export default function AddPage() {
     // Get form data
     const form = e.currentTarget;
     const data = {
-      name: form.medicineName.value,
-      description: form.description.value,
+      name: medicineName,
+      description,
       price: Number(form.price.value),
       stock: Number(form.stock.value),
       manufacturer: form.manufacturer.value,
@@ -89,6 +92,25 @@ export default function AddPage() {
     setLoading(false);
   };
 
+  const handleGenerate = async () => {
+    if (!medicineName.trim()) {
+      toast.error("আগে medicine name লিখুন");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const generated = await generateMedicineDescription(medicineName);
+      setDescription(generated.fullText || generated.description);
+      toast.success("AI description generated");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate";
+      toast.error("AI generate failed", { description: message });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-2xl bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
       <h1 className="text-2xl font-bold mb-6">Add Medicine</h1>
@@ -97,13 +119,36 @@ export default function AddPage() {
         {/* Medicine Name */}
         <div>
           <Label className="text-gray-900 dark:text-white">Medicine Name</Label>
-          <Input name="medicineName" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
+          <Input
+            name="medicineName"
+            value={medicineName}
+            onChange={(e) => setMedicineName(e.target.value)}
+            required
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
+          />
+          <div className="mt-2">
+            <Button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating || !medicineName.trim()}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {generating ? "Generating..." : "AI Generate"}
+            </Button>
+          </div>
         </div>
 
         {/* Description */}
         <div>
           <Label className="text-gray-900 dark:text-white">Description</Label>
-          <Input name="description" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
+          <textarea
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            rows={8}
+            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2"
+          />
         </div>
 
         {/* Price */}

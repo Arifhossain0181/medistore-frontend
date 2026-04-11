@@ -11,6 +11,13 @@ export interface MedicineData {
     imageUrl: string;
 }
 
+export interface GeneratedMedicineData {
+    description: string;
+    usage: string;
+    sideEffects: string;
+    fullText: string;
+}
+
 // Simple async function to add medicine
 export async function addmedicine(med: MedicineData) {
     try {
@@ -30,6 +37,31 @@ export async function addmedicine(med: MedicineData) {
             }
             throw new Error(message);
         }
+        throw error;
+    }
+}
+
+export async function generateMedicineDescription(name: string): Promise<GeneratedMedicineData> {
+    try {
+        const res = await axios.post(
+            `/api/medicines/ai-generate`,
+            { name },
+            { withCredentials: true }
+        );
+
+        return res.data?.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const status = error.response?.status;
+            const message = error.response?.data?.message || error.message;
+
+            if (status === 401) {
+                throw new Error("Unauthorized: Please login as a seller.");
+            }
+
+            throw new Error(message);
+        }
+
         throw error;
     }
 }
