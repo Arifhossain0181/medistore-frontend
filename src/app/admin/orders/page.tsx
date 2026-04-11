@@ -28,22 +28,28 @@ export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const loadPageData = async () => {
-        setLoading(true);
+    const loadPageData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const ordersResult = await fetchOrders.getOrders();
 
             const incomingOrders = ordersResult?.data?.data || ordersResult?.data || [];
             setOrders(Array.isArray(incomingOrders) ? incomingOrders : []);
         } catch (error) {
-            toast.error("Failed to load orders");
+            if (!silent) toast.error("Failed to load orders");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
     useEffect(() => {
         loadPageData();
+
+        const intervalId = setInterval(() => {
+            loadPageData(true);
+        }, 15000);
+
+        return () => clearInterval(intervalId);
     }, []);
 
     const getOrderTotal = (order: Order) => {

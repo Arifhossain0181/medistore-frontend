@@ -86,6 +86,24 @@ export async function assignOrderToDeliveryMan(orderId: string, deliveryManId: s
   return res.json();
 }
 
+export async function updateDeliveryOrderStatus(orderId: string, status: "SHIPPED" | "DELIVERED" | "FAILED") {
+  const res = await fetch(`/api/delivery/orders/${orderId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload?.message || "Failed to update delivery status");
+  }
+
+  return res.json();
+}
+
 export function getMyDeliveryOrders() {
   return getDeliveryAssignments("/api/delivery/orders");
 }

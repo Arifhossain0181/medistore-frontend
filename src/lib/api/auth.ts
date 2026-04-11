@@ -1,15 +1,18 @@
-import { createAuthClient } from 'better-auth/react'
-import { nextCookies } from "better-auth/next-js";
 import axios from 'axios';
 
-export const authClient = createAuthClient({
-    baseURL: "/api/auth",
-    credentials:"include",
-    plugins:[
-       nextCookies()
-    ],
-
-})
+export const getUserProfile = async () => {
+    try {
+        const response = await axios.get(`/api/user/me`, {
+            withCredentials: true,
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch profile');
+        }
+        throw error;
+    }
+};
 
 // Profile management functions
 export const updateUserProfile = async (data: { name?: string; email?: string; image?: string }) => {
@@ -23,6 +26,20 @@ export const updateUserProfile = async (data: { name?: string; email?: string; i
     } catch (error) {
         if (axios.isAxiosError(error)) {
             throw new Error(error.response?.data?.message || 'Failed to update profile');
+        }
+        throw error;
+    }
+};
+
+export const getCustomerDashboardStats = async () => {
+    try {
+        const response = await axios.get(`/api/user/me/dashboard-stats`, {
+            withCredentials: true,
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data?.message || 'Failed to fetch dashboard stats');
         }
         throw error;
     }

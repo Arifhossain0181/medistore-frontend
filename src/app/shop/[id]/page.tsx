@@ -107,7 +107,19 @@ export default function Mediasingle(){
         return;
       }
 
-      router.push(`/payment/checkout?medicineId=${medicine.id}`);
+      addToCart({
+        id: medicine.id,
+        name: medicine.name,
+        price: medicine.price,
+        manufacturer: medicine.manufacturer,
+        imageUrl: medicine.imageUrl,
+      });
+
+      toast.success("Proceed to checkout to complete payment", {
+        description: "Shipping info and payment will create your order",
+      });
+
+      router.push("/checkout");
     }
     
 

@@ -99,9 +99,13 @@ const Navbar = ({
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   
-  // Show dashboard menu only when user is logged in
-  const menuItems = user 
-    ? [...menu, { title: "Dashboard", url: "/dashboard" }]
+  // Show extra tools for any logged-in role (customer, delivery, admin, super-admin)
+  const menuItems = user
+    ? [
+        ...menu,
+        { title: "Dashboard", url: "/dashboard" },
+        { title: "Prescription Reader", url: "/prescription-reader" },
+      ]
     : menu;
   
   const loginUrl = pathname && pathname !== "/login" && pathname !== "/signup" 

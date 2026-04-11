@@ -13,6 +13,7 @@ interface Order {
   totalAmount?: number;
   status: string;
   createdAt: string;
+  items?: string[];
   user?: {
     name?: string;
     email: string;
@@ -31,31 +32,45 @@ export default function SellerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadPageData = async () => {
-      setLoading(true);
+  const loadPageData = async (silent = false) => {
+    if (!silent) setLoading(true);
+
+    try {
+      const { data, error } = await fetchOrders.getSellerOrders();
+
+      if (error) {
+          if (!silent) {
+            const message = error instanceof Error ? error.message : "Failed to load orders";
+            toast.error(message);
+          }
+      } else {
+        const ordersData = data?.data || data || [];
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
+      }
+
       try {
-        const [{ data, error }, deliveryMenData] = await Promise.all([
-          fetchOrders.getSellerOrders(),
-          getDeliveryMen(),
-        ]);
-
-        if (error) {
-          toast.error("Failed to load orders");
-        } else {
-          const ordersData = data?.data || data || [];
-          setOrders(Array.isArray(ordersData) ? ordersData : []);
-        }
-
+        const deliveryMenData = await getDeliveryMen();
         setDeliveryMen(deliveryMenData);
       } catch {
-        toast.error("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
+        if (!silent) {
+          toast.error("Failed to load delivery men list");
+        }
       }
-    };
+    } catch {
+      if (!silent) toast.error("Failed to load dashboard data");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadPageData();
+
+    const intervalId = setInterval(() => {
+      loadPageData(true);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const getOrderTotal = (order: Order) => Number(order.total ?? order.totalAmount ?? 0);
@@ -91,6 +106,11 @@ export default function SellerOrdersPage() {
     setAssigningOrderId(orderId);
     try {
       await assignOrderToDeliveryMan(orderId, deliveryManId);
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId ? { ...order, status: "SHIPPED" } : order,
+        ),
+      );
       toast.success("Delivery man assigned");
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Failed to assign delivery man");
@@ -123,6 +143,7 @@ export default function SellerOrdersPage() {
               <tr>
                 <th className="px-6 py-3 text-left">Order</th>
                 <th className="px-6 py-3 text-left">Customer</th>
+                <th className="px-6 py-3 text-left">Items</th>
                 <th className="px-6 py-3 text-left">Total</th>
                 <th className="px-6 py-3 text-left">Status</th>
                 <th className="px-6 py-3 text-left">Date</th>
@@ -140,6 +161,12 @@ export default function SellerOrdersPage() {
 
                   <td className="px-6 py-4">
                     {order.user?.name || order.user?.email}
+                  </td>
+
+                  <td className="px-6 py-4 max-w-64">
+                    <p className="truncate" title={order.items?.join(", ") || "No items"}>
+                      {order.items?.length ? order.items.join(", ") : "No items"}
+                    </p>
                   </td>
 
                   <td className="px-6 py-4 font-semibold">
@@ -190,12 +217,16 @@ export default function SellerOrdersPage() {
 
                   <td className="px-6 py-4">
                     <select
-                      value={order.status}
+                      value={STATUSES.includes(order.status) ? order.status : ""}
                       onChange={(e) =>
                         handleStatusChange(order.id, e.target.value)
                       }
+                      disabled={!STATUSES.includes(order.status)}
                       className="border rounded px-2 py-1 text-sm"
                     >
+                      <option value="" disabled>
+                        {order.status}
+                      </option>
                       {STATUSES.map((status) => (
                         <option key={status} value={status}>
                           {status}

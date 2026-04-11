@@ -27,6 +27,20 @@ interface OrderDetails {
   createdAt: string;
   shippingAddress?: string;
   phone?: string;
+  paymentSummary?: {
+    status: "PAID" | "PARTIALLY_PAID" | "PENDING";
+    totalPaidAmount: number;
+    paidItems: number;
+    totalItems: number;
+    payments: Array<{
+      medicineId: string;
+      medicineName: string;
+      status: string;
+      amount: number;
+      paidAt: string | null;
+      stripeSessionId: string | null;
+    }>;
+  };
   items: OrderItem[];
 }
 
@@ -145,6 +159,68 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               )}
             </div>
           </div>
+        </div>
+
+        {/* Payment Info */}
+        <div className="mb-6 rounded-lg border border-gray-200 dark:border-gray-600 p-5 bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">Payment Information</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loaded from Prisma payment records</p>
+            </div>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium
+              ${order.paymentSummary?.status === 'PAID' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
+              ${order.paymentSummary?.status === 'PARTIALLY_PAID' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''}
+              ${order.paymentSummary?.status === 'PENDING' || !order.paymentSummary?.status ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
+            `}>
+              {order.paymentSummary?.status || 'PENDING'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm">
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Paid Items</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {order.paymentSummary?.paidItems || 0}/{order.paymentSummary?.totalItems || 0}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Paid Amount</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                ${Number(order.paymentSummary?.totalPaidAmount || 0).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-500 dark:text-gray-400">Order Payment Status</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {order.paymentSummary?.status || 'PENDING'}
+              </p>
+            </div>
+          </div>
+
+          {order.paymentSummary?.payments && order.paymentSummary.payments.length > 0 ? (
+            <div className="space-y-3">
+              {order.paymentSummary.payments.map((payment) => (
+                <div key={payment.medicineId} className="rounded-lg border border-gray-200 dark:border-gray-600 p-4 bg-white dark:bg-gray-900">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{payment.medicineName}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Session: {payment.stripeSessionId || 'N/A'}
+                      </p>
+                    </div>
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      <p>Status: {payment.status}</p>
+                      <p>Amount: ${Number(payment.amount || 0).toFixed(2)}</p>
+                      <p>Paid at: {payment.paidAt ? new Date(payment.paidAt).toLocaleString() : 'Not paid yet'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">No payment records found for this order.</p>
+          )}
         </div>
 
         {/* Order Items */}

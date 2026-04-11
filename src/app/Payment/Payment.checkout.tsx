@@ -4,13 +4,15 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authstore';
-import { initMedicinePayment } from '@/lib/api/payment';
+import { useCartStore } from '@/store/cartstore';
+import { getSingleMedicine } from '@/lib/api/medicine';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const params = useSearchParams();
   const medicineId = params.get('medicineId') || '';
   const user = useAuthStore((s) => s.user);
+  const addToCart = useCartStore((s) => s.addToCart);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,15 +37,18 @@ export default function CheckoutPage() {
       setLoading(true);
       setError('');
       try {
-        const result = await initMedicinePayment(medicineId);
+        const medicine = await getSingleMedicine(medicineId);
+        addToCart({
+          id: medicine.id,
+          name: medicine.name,
+          price: medicine.price,
+          manufacturer: medicine.manufacturer,
+          imageUrl: medicine.imageUrl,
+        });
 
-        if (!result?.url) {
-          throw new Error('Stripe checkout URL not found');
-        }
-
-        window.location.href = result.url;
+        router.replace('/checkout');
       } catch (err: any) {
-        setError(err?.message || 'Unable to start payment. Please try again.');
+        setError(err?.message || 'Unable to prepare checkout. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -56,12 +61,12 @@ export default function CheckoutPage() {
     <div className="mx-auto mt-16 max-w-lg rounded-xl border bg-white p-8 text-center shadow-sm">
       <h1 className="text-2xl font-bold text-slate-900">Secure Payment</h1>
       <p className="mt-2 text-sm text-slate-600">
-        We are redirecting you to Stripe Checkout to complete your payment securely.
+        We are preparing your order checkout with shipping and payment details.
       </p>
 
       <div className="mt-8 flex items-center justify-center gap-2 text-slate-700">
         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-        <span>{loading ? 'Preparing checkout session...' : 'Checkout status ready'}</span>
+        <span>{loading ? 'Preparing order checkout...' : 'Checkout status ready'}</span>
       </div>
 
       {error ? (

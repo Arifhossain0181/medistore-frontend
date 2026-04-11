@@ -8,20 +8,28 @@ export default function SuperAdminOrdersPage() {
   const [orders, setOrders] = useState<SuperAdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        const data = await getSuperAdminOrders();
-        setOrders(data || []);
-      } catch (error) {
-        console.error("Failed to load orders:", error);
-        toast.error("Failed to load orders");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
 
+    try {
+      const data = await getSuperAdminOrders();
+      setOrders(data || []);
+    } catch (error) {
+      console.error("Failed to load orders:", error);
+      if (!silent) toast.error("Failed to load orders");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadOrders();
+
+    const intervalId = setInterval(() => {
+      loadOrders(true);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const getOrderTotal = (order: SuperAdminOrder) => Number(order.totalAmount ?? 0);

@@ -10,6 +10,10 @@ export const fetchOrders = {
         cache: "no-cache"
       })
       const data = await res.json();
+      if (!res.ok) {
+        const message = data?.message || `Failed to fetch admin orders (${res.status})`;
+        return { data: null, error: new Error(message) };
+      }
       return {data: data ,error:null}      
     }catch(error){
       return {data:null,error:error}
@@ -19,12 +23,31 @@ export const fetchOrders = {
   
   getSellerOrders: async function(){
     try{
-      const res = await fetch(`${API_BASE_URL}/api/orders/seller/orders`,{
+      const res = await fetch(`${API_BASE_URL}/api/seller/orders`,{
         credentials: "include",
         cache: "no-cache"
       })
-      const data = await res.json();
-      return {data: data ,error:null}      
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return {data: data ,error:null}
+      }
+
+      // Fallback to orders module route if seller module route is blocked/misconfigured.
+      const fallbackRes = await fetch(`${API_BASE_URL}/api/orders/seller/orders`, {
+        credentials: "include",
+        cache: "no-cache"
+      });
+      const fallbackData = await fallbackRes.json().catch(() => ({}));
+
+      if (!fallbackRes.ok) {
+        const message =
+          fallbackData?.message ||
+          data?.message ||
+          `Failed to fetch seller orders (${fallbackRes.status})`;
+        return { data: null, error: new Error(message) };
+      }
+
+      return { data: fallbackData, error: null };
     }catch(error){
       return {data:null,error:error}
     }

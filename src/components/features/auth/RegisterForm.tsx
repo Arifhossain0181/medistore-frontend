@@ -6,6 +6,7 @@ import * as z from "zod";
 import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";
+import { Chrome } from "lucide-react";
 
 export default function RegisterForm() {
   const formSchema = z.object({
@@ -16,12 +17,15 @@ export default function RegisterForm() {
   });
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
   });
+
+  const getRedirectURL = () => new URL("/", window.location.origin).toString();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -72,6 +76,38 @@ export default function RegisterForm() {
     }
   };
 
+  const handleGoogleRegister = async () => {
+    setGoogleLoading(true);
+
+    try {
+      const callbackURL = getRedirectURL();
+      const res = await axios.post(
+        "/api/auth/sign-in/social",
+        {
+          provider: "google",
+          callbackURL,
+          disableRedirect: true,
+        },
+        { withCredentials: true },
+      );
+
+      if (res.data?.url) {
+        window.location.assign(res.data.url);
+        return;
+      }
+
+      toast.error("Google registration did not return a redirect URL.");
+    } catch (err: unknown) {
+      console.error("Google registration error:", err);
+      const errorMessage = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.message
+        : "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await registerUser();
@@ -115,6 +151,20 @@ export default function RegisterForm() {
       />
       <button type="submit" className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 mt-2" disabled={loading}>
         {loading ? "Registering..." : "Register"}
+      </button>
+      <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-gray-400">
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        <span>or</span>
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+      </div>
+      <button
+        type="button"
+        onClick={handleGoogleRegister}
+        className="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+        disabled={loading || googleLoading}
+      >
+        <Chrome className="h-4 w-4" />
+        {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
       </button>
       <Link
         href="/auth/delivery-man-registration"

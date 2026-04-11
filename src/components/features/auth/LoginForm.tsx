@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
+import { Chrome } from "lucide-react";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -15,8 +16,14 @@ export default function LoginForm() {
   const setUserId = useCartStore((s) => s.setUserId);
 
   const [email, setemail] = useState("");
-    const [password, setpassword] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [password, setpassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const getRedirectURL = () => {
+    const redirectPath = searchParams.get("redirect") || "/";
+    return new URL(redirectPath, window.location.origin).toString();
+  };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -82,6 +89,47 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+
+    try {
+      if (typeof window !== "undefined") {
+        // Mark that a Google login flow has started so we can show a toast after redirect
+        sessionStorage.setItem("medistore-google-login-pending", "1");
+      }
+
+      const callbackURL = getRedirectURL();
+      const res = await axios.post(
+        "/api/auth/sign-in/social",
+        {
+          provider: "google",
+          callbackURL,
+          disableRedirect: true,
+        },
+        { withCredentials: true },
+      );
+
+      if (res.data?.url) {
+        window.location.assign(res.data.url);
+        return;
+      }
+
+      toast.error("Google login did not return a redirect URL.");
+    } catch (err: unknown) {
+      console.error("Google login error:", err);
+      const errorMessage = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.message
+        : "Something went wrong";
+      toast.error(errorMessage);
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("medistore-google-login-pending");
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleLogin} className="flex flex-col gap-4">
       <input
@@ -99,6 +147,20 @@ export default function LoginForm() {
         required
       />
       <button className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50" disabled={loading}>{loading ? "Logging in..." : "Login"} </button>
+      <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-gray-400">
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+        <span>or</span>
+        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+      </div>
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        className="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+        disabled={loading || googleLoading}
+      >
+        <Chrome className="h-4 w-4" />
+        {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+      </button>
     </form>
   );
 }

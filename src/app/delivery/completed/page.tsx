@@ -8,19 +8,25 @@ export default function DeliveryCompletedPage() {
   const [orders, setOrders] = useState<DeliveryAssignment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        setOrders(await getMyCompletedDeliveryOrders());
-      } catch (_error) {
-        toast.error("Failed to load completed deliveries");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      setOrders(await getMyCompletedDeliveryOrders());
+    } catch (_error) {
+      if (!silent) toast.error("Failed to load completed deliveries");
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     load();
+
+    const intervalId = setInterval(() => {
+      load(true);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (

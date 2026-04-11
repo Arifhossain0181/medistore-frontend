@@ -5,7 +5,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authstore";
 import type { User } from "@/store/authstore";
-import { updateUserProfile, changeUserPassword } from "@/lib/api/auth";
+import { updateUserProfile, getUserProfile, getCustomerDashboardStats } from "@/lib/api/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,19 +17,13 @@ import { toast } from "sonner";
 import {
   UserIcon,
   Mail,
-  Phone,
-  MapPin,
-  Calendar,
   Edit3,
   Save,
   X,
-  Lock,
   ShoppingBag,
   CreditCard,
   Settings,
   Camera,
-  Eye,
-  EyeOff
 } from "lucide-react";
 import { Label } from "@/nextjs/ui/label";
 
@@ -39,16 +33,25 @@ interface UserProfile {
   email: string;
   role: 'ADMIN' | 'SELLER' | 'CUSTOMER';
   image?: string;
+  status?: string;
+}
+
+interface CustomerDashboardStats {
+  totalOrders: number;
+  totalSpent: number;
+  accountStatus: string;
 }
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, hasHydrated } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<CustomerDashboardStats>({
+    totalOrders: 0,
+    totalSpent: 0,
+    accountStatus: "ACTIVE",
+  });
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -56,22 +59,64 @@ export default function ProfilePage() {
     image: ""
   });
 
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
-
   useEffect(() => {
-    if (user) {
-      setProfile(user as UserProfile);
-      setEditForm({
-        name: user.name || "",
-        email: user.email || "",
-        image: user.image || ""
-      });
-    }
-  }, [user]);
+    const syncProfile = async () => {
+      if (!hasHydrated) return;
+
+      const loadStats = async () => {
+        const statsResponse = await getCustomerDashboardStats();
+        if (statsResponse?.stats) {
+          setStats({
+            totalOrders: Number(statsResponse.stats.totalOrders || 0),
+            totalSpent: Number(statsResponse.stats.totalSpent || 0),
+            accountStatus: String(statsResponse.stats.accountStatus || "ACTIVE"),
+          });
+        }
+      };
+
+      if (user) {
+        setProfile(user as UserProfile);
+        setEditForm({
+          name: user.name || "",
+          email: user.email || "",
+          image: user.image || ""
+        });
+        try {
+          await loadStats();
+        } catch {
+          // Ignore stats errors to avoid blocking profile rendering.
+        }
+        return;
+      }
+
+      try {
+        const [profileResponse] = await Promise.all([
+          getUserProfile(),
+        ]);
+
+        const response = profileResponse;
+        const profileUser = response?.user as User | undefined;
+
+        if (!profileUser) {
+          return;
+        }
+
+        setUser(profileUser);
+        setProfile(profileUser as UserProfile);
+        setEditForm({
+          name: profileUser.name || "",
+          email: profileUser.email || "",
+          image: profileUser.image || ""
+        });
+
+        await loadStats();
+      } catch {
+        toast.error("Please login to manage your profile");
+      }
+    };
+
+    syncProfile();
+  }, [user, hasHydrated, setUser]);
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,58 +139,19 @@ export default function ProfilePage() {
       const response = await updateUserProfile(updateData);
 
       if (response.success) {
-        // Update the user in the store
-        if (user) {
-          const updatedUser: User = {
-            ...user,
-            ...updateData
-          };
-          setUser(updatedUser);
-          setProfile(updatedUser as UserProfile);
-        }
+        const updatedProfile = (response?.user || {
+          ...user,
+          ...updateData,
+        }) as User;
+
+        setUser(updatedProfile);
+        setProfile(updatedProfile as UserProfile);
+
         setIsEditing(false);
         toast.success("Profile updated successfully!");
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update profile";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("New passwords don't match");
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await changeUserPassword({
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword
-      });
-
-      if (response.success) {
-        toast.success("Password changed successfully!");
-        setIsChangingPassword(false);
-        setPasswordForm({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: ""
-        });
-      }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to change password";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -179,9 +185,11 @@ export default function ProfilePage() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  const avatarSrc = isEditing ? (editForm.image || profile?.image || "") : (profile?.image || "");
+
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] bg-white dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-100 bg-white dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
@@ -210,7 +218,7 @@ export default function ProfilePage() {
             <CardHeader className="text-center">
               <div className="relative">
                 <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarImage src={profile.image} alt={profile.name} />
+                  <AvatarImage src={avatarSrc} alt={profile.name} />
                   <AvatarFallback className="text-2xl">
                     {getInitials(profile.name)}
                   </AvatarFallback>
@@ -240,14 +248,6 @@ export default function ProfilePage() {
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => setIsChangingPassword(!isChangingPassword)}
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  Change Password
                 </Button>
               </div>
             </CardContent>
@@ -337,97 +337,6 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Change Password */}
-          {isChangingPassword && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="w-5 h-5" />
-                  Change Password
-                </CardTitle>
-                <CardDescription>
-                  Update your password to keep your account secure
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <div>
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      >
-                        {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="newPassword"
-                          type={showNewPassword ? "text" : "password"}
-                          value={passwordForm.newPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                          required
-                          minLength={6}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                        >
-                          {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" disabled={loading}>
-                      <Save className="w-4 h-4 mr-2" />
-                      {loading ? "Updating..." : "Update Password"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsChangingPassword(false);
-                        setPasswordForm({
-                          currentPassword: "",
-                          newPassword: "",
-                          confirmPassword: ""
-                        });
-                      }}
-                    >
-                      <X className="w-4 h-4 mr-2" />
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Account Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -436,7 +345,7 @@ export default function ProfilePage() {
                   <ShoppingBag className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">12</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalOrders}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
                 </div>
               </CardContent>
@@ -447,7 +356,7 @@ export default function ProfilePage() {
                   <CreditCard className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">$1,250</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">${stats.totalSpent.toFixed(2)}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total Spent</p>
                 </div>
               </CardContent>
@@ -458,7 +367,7 @@ export default function ProfilePage() {
                   <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">Active</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.accountStatus}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Account Status</p>
                 </div>
               </CardContent>

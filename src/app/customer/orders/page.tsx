@@ -13,6 +13,12 @@ interface Order {
   totalAmount?: number;
   status: string;
   createdAt: string;
+  paymentSummary?: {
+    status: "PAID" | "PARTIALLY_PAID" | "PENDING";
+    totalPaidAmount: number;
+    paidItems: number;
+    totalItems: number;
+  };
   items?: Array<{
     id: string;
     quantity: number;
@@ -30,9 +36,17 @@ export default function CustomerOrdersPage() {
 
   useEffect(() => {
     loadOrders();
+
+    const intervalId = setInterval(() => {
+      loadOrders(true);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = async (silent = false) => {
+    if (!silent) setLoading(true);
+
     try {
       const data = await getMyOrders();
       console.log("My orders raw data:", data);
@@ -42,9 +56,11 @@ export default function CustomerOrdersPage() {
       setOrders(ordersArray);
     } catch (error) {
       console.error("Error loading orders:", error);
-      toast.error("Failed to load orders. Please try again.");
+      if (!silent) {
+        toast.error("Failed to load orders. Please try again.");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -121,6 +137,24 @@ export default function CustomerOrdersPage() {
                     {order.status}
                   </span>
                 </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className={`px-3 py-1 rounded-full font-medium ${
+                  order.paymentSummary?.status === 'PAID'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : order.paymentSummary?.status === 'PARTIALLY_PAID'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                }`}>
+                  Payment: {order.paymentSummary?.status || 'PENDING'}
+                </span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Paid items {order.paymentSummary?.paidItems || 0}/{order.paymentSummary?.totalItems || 0}
+                </span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Paid ${Number(order.paymentSummary?.totalPaidAmount || 0).toFixed(2)}
+                </span>
               </div>
 
               {order.items && order.items.length > 0 ? (

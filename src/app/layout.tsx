@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ConditionalNavbar } from "@/components/layouts/ConditionalNavbar";
 import { ThemeProvider } from "@/Providers/theme.Provider";
+import { AuthHydrator } from "@/Providers/auth-hydrator";
 import { ConditionalFooter } from "@/components/layouts/ConditionalFooter";
 import { Toaster } from "@/components/ui/sonner";
+import ChatWidget from "@/app/chatbot/chatwidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,17 +33,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-             <ConditionalNavbar />
-        {children}
-        <ConditionalFooter />
-        <Toaster richColors />
-          </ThemeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthHydrator />
+          <ConditionalNavbar />
+          <ChatWidget />
+          {children}
+          <ConditionalFooter />
+          <Toaster richColors />
+        </ThemeProvider>
        
       </body>
     </html>
