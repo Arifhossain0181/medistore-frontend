@@ -1,8 +1,10 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { compressImage } from '@/utils/compressImage';
+import { useAuthStore } from '@/store/authstore';
 
 type MatchedItem = {
   detectedName: string;
@@ -24,38 +26,13 @@ type ScanAndAddResponse = {
 export default function PrescriptionReaderPage() {
   const MAX_FILE_SIZE = 6 * 1024 * 1024;
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const hasHydrated = useAuthStore((s) => s.hasHydrated);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [error, setError] = useState('');
   const [result, setResult] = useState<ScanAndAddResponse['data'] | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    const ensureSession = async () => {
-      try {
-        const sessionCheck = await fetch('/api/auth/me', {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (active && !sessionCheck.ok) {
-          router.replace('/login?redirect=/prescription-reader');
-        }
-      } catch {
-        if (active) {
-          router.replace('/login?redirect=/prescription-reader');
-        }
-      }
-    };
-
-    ensureSession();
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
 
   const previewUrl = useMemo(() => {
     if (!file) return '';
@@ -93,23 +70,18 @@ export default function PrescriptionReaderPage() {
       return;
     }
 
+    if (hasHydrated && !user) {
+      setError('Login required to scan prescription. Redirecting to login page...');
+      router.push('/login?redirect=/prescription-reader');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setResult(null);
     setLoadingStep('image-compress');
 
     try {
-      const sessionCheck = await fetch('/api/auth/me', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!sessionCheck.ok) {
-        setError('Login required. Redirecting to login page...');
-        router.push('/login?redirect=/prescription-reader');
-        return;
-      }
-
       const image = await compressImage(file, 800);
 
       if (image.length > 12 * 1024 * 1024) {
@@ -209,7 +181,14 @@ export default function PrescriptionReaderPage() {
           {previewUrl && (
             <div className="mt-5">
               <p className="mb-2 text-sm font-medium text-slate-700">Image Preview</p>
-              <img src={previewUrl} alt="Prescription preview" className="max-h-80 rounded-lg border border-slate-200" />
+              <Image
+                src={previewUrl}
+                alt="Prescription preview"
+                width={800}
+                height={480}
+                unoptimized
+                className="max-h-80 w-auto rounded-lg border border-slate-200"
+              />
             </div>
           )}
         </section>

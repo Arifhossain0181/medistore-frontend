@@ -44,6 +44,19 @@ type Category = {
   description?: string;
 };
 
+const getSafeImageSrc = (imageUrl?: string): string => {
+  if (!imageUrl) return "/placeholder.png";
+
+  const url = imageUrl.trim();
+  if (!url) return "/placeholder.png";
+
+  if (url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:image/")) {
+    return url;
+  }
+
+  return "/placeholder.png";
+};
+
 const ShopPage = () => {
   const addToCart = useCartStore((s) => s.addToCart)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -288,7 +301,7 @@ const ShopPage = () => {
             <Link href={`/shop/${med.id}`}>
               <div className="flex h-56 items-center justify-center bg-white rounded-t-xl cursor-pointer hover:opacity-90 transition-opacity">
                 <Image
-                  src={med.imageUrl || "/placeholder.png"}
+                  src={getSafeImageSrc(med.imageUrl)}
                   alt={med.name}
                   width={160}
                   height={160}

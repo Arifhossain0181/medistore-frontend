@@ -87,6 +87,10 @@ const Navbar = ({
       title: "Cart",
       url: "/cart",
     },
+    {
+      title: "Smart Search",
+      url: "/smart-search",
+    },
   ],
   auth = {
     login: { title: "Login", url: "/login" },
