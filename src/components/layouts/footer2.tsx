@@ -86,7 +86,7 @@ const Footer2 = ({
   return (
     <section
       className={cn(
-        "relative overflow-hidden border-t border-slate-200 bg-slate-100 py-10 text-slate-700 sm:py-12 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300",
+        "relative overflow-hidden border-t border-slate-200 bg-linear-to-b from-slate-50 to-slate-100 py-10 text-slate-700 sm:py-12 dark:border-slate-800 dark:bg-linear-to-b dark:from-slate-950 dark:to-slate-900 dark:text-slate-300",
         className,
       )}
     >
@@ -98,7 +98,7 @@ const Footer2 = ({
       <div className="container mx-auto px-4 sm:px-6">
         <footer>
           <div className="relative z-10 grid grid-cols-1 gap-8 border-b border-slate-300/70 pb-8 sm:grid-cols-2 lg:grid-cols-6 dark:border-slate-800">
-            <div className="col-span-1 rounded-2xl border border-slate-300/70 bg-white/80 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.5)] backdrop-blur sm:col-span-2 sm:p-6 dark:border-slate-700 dark:bg-slate-900/75">
+            <div className="col-span-1 rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.5)] backdrop-blur sm:col-span-2 sm:p-6 dark:border-slate-700 dark:bg-slate-900/90">
               <div className="flex items-start gap-3 sm:items-center lg:justify-start">
                 <Logo url="/">
                   <LogoImage
@@ -107,7 +107,7 @@ const Footer2 = ({
                     title={logo.title}
                     className="h-8 w-8 shrink-0 sm:h-9 sm:w-9"
                   />
-                  <LogoText className="hidden text-xl text-slate-900 sm:flex dark:text-slate-100">{logo.title}</LogoText>
+                  <LogoText className="hidden text-xl text-slate-950 sm:flex dark:text-slate-50">{logo.title}</LogoText>
                 </Logo>
               </div>
               <p className="mt-4 text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">{tagline}</p>
@@ -120,14 +120,14 @@ const Footer2 = ({
                 <p className="flex items-center gap-2"><Mail className="size-4 text-emerald-600 dark:text-emerald-300" /> support@medistore.com</p>
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-300 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"><Facebook className="size-4" /></a>
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-300 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"><Instagram className="size-4" /></a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-300 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:text-cyan-300"><Linkedin className="size-4" /></a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:bg-slate-50 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:bg-slate-800 dark:hover:text-cyan-300"><Facebook className="size-4" /></a>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:bg-slate-50 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:bg-slate-800 dark:hover:text-cyan-300"><Instagram className="size-4" /></a>
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-700 transition hover:border-cyan-300 hover:bg-slate-50 hover:text-cyan-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-cyan-700 dark:hover:bg-slate-800 dark:hover:text-cyan-300"><Linkedin className="size-4" /></a>
               </div>
             </div>
             {menuItems.map((section, sectionIdx) => (
-              <div key={`${section.title}-${sectionIdx}`} className="rounded-2xl border border-slate-200/70 bg-white/50 p-5 backdrop-blur sm:border-transparent sm:bg-transparent sm:p-0 dark:border-slate-800/60 sm:dark:border-transparent sm:dark:bg-transparent">
-                <h3 className="mb-4 text-sm font-bold tracking-[0.08em] text-slate-800 uppercase dark:text-slate-100">{section.title}</h3>
+              <div key={`${section.title}-${sectionIdx}`} className="rounded-2xl border border-slate-200 bg-white/75 p-5 backdrop-blur sm:border-transparent sm:bg-transparent sm:p-0 dark:border-slate-800/60 sm:dark:border-transparent sm:dark:bg-transparent">
+                <h3 className="mb-4 text-sm font-bold tracking-[0.08em] text-slate-900 uppercase dark:text-slate-100">{section.title}</h3>
                 <ul className="grid gap-3 sm:block sm:space-y-3">
                   {section.links.map((link, linkIdx) => (
                     <li
@@ -142,12 +142,12 @@ const Footer2 = ({
             ))}
           </div>
 
-          <div className="relative z-10 mt-6 flex flex-col gap-4 text-sm font-medium text-slate-600 md:flex-row md:items-center md:justify-between dark:text-slate-300">
+          <div className="relative z-10 mt-6 flex flex-col gap-4 text-sm font-medium text-slate-700 md:flex-row md:items-center md:justify-between dark:text-slate-300">
             <p className="text-center md:text-left">{copyright}</p>
             <ul className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center md:justify-end">
               {bottomLinks.map((link, linkIdx) => (
                 <li key={`${link.text}-${link.url}-${linkIdx}`}>
-                  <Link href={link.url} className="flex w-full items-center justify-center rounded-full border border-slate-300/80 px-4 py-2 text-xs text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700 sm:w-auto dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-700 dark:hover:text-emerald-300">
+                  <Link href={link.url} className="flex w-full items-center justify-center rounded-full border border-slate-300/80 bg-white px-4 py-2 text-xs text-slate-700 transition hover:border-emerald-300 hover:bg-slate-50 hover:text-emerald-700 sm:w-auto dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-emerald-700 dark:hover:bg-slate-800 dark:hover:text-emerald-300">
                     {link.text}
                   </Link>
                 </li>
