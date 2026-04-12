@@ -191,7 +191,7 @@ const Navbar = ({
               alt={logo.alt}
               width={34}
               height={34}
-              className="max-h-8 w-auto"
+              className="h-8 w-auto"
             />
             <span className="text-lg tracking-tight font-bold text-slate-900 dark:text-white">
               {logo.title}

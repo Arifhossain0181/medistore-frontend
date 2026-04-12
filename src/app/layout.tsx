@@ -21,7 +21,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MediStore - Your Trusted Online Medicine Shop",
-  description: "Order medicines online with ease. Fast delivery, genuine products, and best prices guaranteed."
+  description: "Order medicines online with ease. Fast delivery, genuine products, and best prices guaranteed.",
+  icons: {
+    icon: "/next.svg",
+    shortcut: "/next.svg",
+    apple: "/next.svg",
+  },
 };
 export default function RootLayout({
   children,
