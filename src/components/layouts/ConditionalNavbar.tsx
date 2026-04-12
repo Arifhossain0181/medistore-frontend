@@ -9,7 +9,9 @@ export function ConditionalNavbar() {
   const isDashboardRoute = pathname?.startsWith("/dashboard") || 
     pathname?.startsWith("/customer") ||
     pathname?.startsWith("/seller") ||
-    pathname?.startsWith("/admin");
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/super-admin") ||
+    pathname?.startsWith("/delivery");
 
   if (isDashboardRoute) {
     return null;

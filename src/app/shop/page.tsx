@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { HeartIcon, EyeIcon, PackageIcon, ShoppingCart, Search, Filter } from "lucide-react";
+import Lenis from "lenis";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { HeartIcon, ShoppingCart, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,10 +21,10 @@ import {
 } from "@/nextjs/ui/card";
 
 import { cn } from "@/lib/utils";
-import { getAllMedicines, getAllCategories } from "@/lib/api/medicine";
+import { getAllMedicines, getAllCategories, incrementMedicineView } from "@/lib/api/medicine";
 import { useCartStore } from "@/store/cartstore";
 import { useAuthStore } from "@/store/authstore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Medicine = {
   id: string;
@@ -31,7 +33,6 @@ type Medicine = {
   price: number;
   manufacturer: string;
   imageUrl?: string;
-  viewCount?: number;
   category?: {
     id: string;
     name: string;
@@ -58,9 +59,13 @@ const getSafeImageSrc = (imageUrl?: string): string => {
 };
 
 const ShopPage = () => {
+  const { scrollYProgress } = useScroll();
+  const orbY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+
   const addToCart = useCartStore((s) => s.addToCart)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [likedId, setLikedId] = useState<string | null>(null);
@@ -68,6 +73,35 @@ const ShopPage = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.1,
+      smoothWheel: true,
+      touchMultiplier: 1.05,
+    });
+
+    let rafId = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
+
+  useEffect(() => {
+    const searchFromUrl = searchParams.get("search") || "";
+    const categoryFromUrl = searchParams.get("category") || "all";
+
+    setSearchTerm(searchFromUrl);
+    setSelectedCategory(categoryFromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadData(){
@@ -145,16 +179,20 @@ const ShopPage = () => {
     })
   }
 
+  const handleMedicineClick = (medicineId: string) => {
+    void incrementMedicineView(medicineId);
+  }
+
 
 
   if (loading) {
     return (
-      <section className="px-4 py-10">
-        <div className="mb-8">
+      <section className="px-4 pt-32 pb-12 md:pt-36">
+        <div className="mx-auto mb-8 max-w-7xl">
           <Skeleton className="h-10 w-64 mb-2" />
           <Skeleton className="h-4 w-48" />
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[...Array(8)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
               <Skeleton className="h-56 w-full" />
@@ -171,7 +209,7 @@ const ShopPage = () => {
   }
 
   if (error) {
-    return <p className="text-center text-red-500 py-10 text-lg">{error}</p>;
+    return <p className="py-32 text-center text-lg text-red-500">{error}</p>;
   }
 
   if (medicines.length === 0) {
@@ -183,34 +221,51 @@ const ShopPage = () => {
   }
 
   return (
-    <section className="px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold">Shop Medicines</h1>
-        <p className="text-gray-600 mt-2">
+    <section className="relative overflow-hidden bg-slate-50 px-4 pt-32 pb-16 dark:bg-slate-950 md:pt-36">
+      <motion.div style={{ y: orbY }} className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-emerald-200/20 blur-3xl dark:bg-emerald-500/8" />
+        <div className="absolute top-1/3 -right-20 h-72 w-72 rounded-full bg-cyan-200/20 blur-3xl dark:bg-cyan-500/8" />
+      </motion.div>
+
+      <div className="relative z-10 mx-auto max-w-7xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+        className="mb-8"
+      >
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-5xl">Shop Medicines</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-300">
           Browse our collection ({filterMedicines.length} of {medicines.length} items)
         </p>
-      </div>
+      </motion.div>
       {/* Search and Filter Section */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.1 }}
+        className="mb-6 rounded-2xl border border-emerald-100 bg-white/75 p-4 shadow-[0_16px_35px_-30px_rgba(15,23,42,0.45)] backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/70"
+      >
+      <div className="flex flex-col gap-4 sm:flex-row">
         {/* Search Input */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input 
             type="text" 
             placeholder="Search medicines by name, description, or manufacturer..." 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="h-11 border-emerald-100 bg-white/90 pl-10 dark:border-slate-700 dark:bg-slate-900"
           />
         </div>
         
         {/* Category Filter */}
         <div className="relative sm:w-64">
-          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Filter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <select 
             value={selectedCategory} 
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 w-full rounded-md border border-emerald-100 bg-white/90 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:bg-slate-900"
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
@@ -221,6 +276,7 @@ const ShopPage = () => {
           </select>
         </div>
       </div>
+      </motion.div>
 
       {/* Active Filters Display */}
       {(searchTerm || selectedCategory !== "all") && (
@@ -264,8 +320,8 @@ const ShopPage = () => {
       {/* No Results Message */}
       {filterMedicines.length === 0 ? (
         <div className="text-center py-10">
-          <p className="text-lg text-gray-500 mb-2">No medicines found</p>
-          <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
+          <p className="mb-2 text-lg text-slate-500 dark:text-slate-300">No medicines found</p>
+          <p className="text-sm text-slate-400 dark:text-slate-400">Try adjusting your search or filters</p>
         </div>
       ) : (
         <div
@@ -276,11 +332,16 @@ const ShopPage = () => {
             lg:grid-cols-3
             xl:grid-cols-4
           ">
-          {filterMedicines.map((med) => {
+          {filterMedicines.map((med, index) => {
           return (
-          <div
+          <motion.div
             key={med.id}
-            className="relative rounded-xl bg-gradient-to-r from-neutral-700 to-violet-400 shadow-lg hover:shadow-xl transition-shadow"
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.4, delay: index * 0.05 }}
+            whileHover={{ y: -6 }}
+            className="group relative overflow-hidden rounded-xl border border-emerald-100 bg-white/90 shadow-[0_20px_40px_-35px_rgba(15,23,42,0.55)] transition-all dark:border-slate-700 dark:bg-slate-900/90"
           >
             {/* LIKE BUTTON */}
             <Button
@@ -298,23 +359,23 @@ const ShopPage = () => {
             </Button>
 
             {/* IMAGE */}
-            <Link href={`/shop/${med.id}`}>
-              <div className="flex h-56 items-center justify-center bg-white rounded-t-xl cursor-pointer hover:opacity-90 transition-opacity">
+            <Link href={`/shop/${med.id}`} onClick={() => handleMedicineClick(med.id)}>
+              <div className="flex h-56 cursor-pointer items-center justify-center rounded-t-xl bg-slate-50 transition-opacity hover:opacity-95 dark:bg-slate-800/80">
                 <Image
                   src={getSafeImageSrc(med.imageUrl)}
                   alt={med.name}
                   width={160}
                   height={160}
-                  className="object-contain"
+                  className="object-contain transition-transform duration-500 group-hover:scale-110"
                 />
               </div>
             </Link>
 
             {/* CARD */}
-            <Card className="border-none rounded-t-none">
+            <Card className="rounded-t-none border-none bg-transparent">
               <CardHeader>
-                <Link href={`/shop/${med.id}`}>
-                  <CardTitle className="line-clamp-1 cursor-pointer hover:text-violet-600 transition-colors">
+                <Link href={`/shop/${med.id}`} onClick={() => handleMedicineClick(med.id)}>
+                  <CardTitle className="line-clamp-1 cursor-pointer transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
                     {med.name}
                   </CardTitle>
                 </Link>
@@ -327,13 +388,6 @@ const ShopPage = () => {
                 <p className="line-clamp-2 text-sm text-muted-foreground mb-3">
                   {med.description}
                 </p>
-                {/* View Count */}
-                <div className="flex items-center gap-4 mt-2 text-sm">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <EyeIcon className="h-4 w-4" />
-                    <span>{med.viewCount || 0} views</span>
-                  </div>
-                </div>
               </CardContent>
 
               <CardFooter className="flex items-center justify-between gap-3">
@@ -348,18 +402,19 @@ const ShopPage = () => {
 
                 <Button 
                   onClick={() => handleAddtoCart(med)}
-                  className="gap-2"
+                  className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
                 >
                   <ShoppingCart className="h-4 w-4" />
                   Add to cart
                 </Button>
               </CardFooter>
             </Card>
-          </div>
+          </motion.div>
           )
           })}
         </div>
       )}
+      </div>
     </section>
   );
 };

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import { getSingleOrder } from "@/lib/api/order";
+import { createMedicineReview, getMedicineReviews, type MedicineReview } from "@/lib/api/medicine";
 import { useRouter } from "next/navigation";
 import { Button } from "@/nextjs/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,6 +49,10 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
   const router = useRouter();
   const { id } = use(params);
   const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [reviewsByMedicine, setReviewsByMedicine] = useState<Record<string, MedicineReview[]>>({});
+  const [reviewDrafts, setReviewDrafts] = useState<
+    Record<string, { open: boolean; rating: number; comment: string; submitting: boolean }>
+  >({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,11 +66,91 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
       const data = await getSingleOrder(id);
       console.log("Order details:", data);
       setOrder(data);
+
+      const medicineIds = Array.from(
+        new Set((data?.items || []).map((item: OrderItem) => item.medicine?.id).filter(Boolean))
+      ) as string[];
+
+      if (medicineIds.length) {
+        const reviewEntries = await Promise.all(
+          medicineIds.map(async (medicineId) => {
+            try {
+              const reviews = await getMedicineReviews(medicineId);
+              return [medicineId, reviews] as const;
+            } catch {
+              return [medicineId, []] as const;
+            }
+          })
+        );
+
+        setReviewsByMedicine(Object.fromEntries(reviewEntries));
+      }
     } catch (error) {
       console.error("Error loading order:", error);
       toast.error("Failed to load order details. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const canReviewThisOrder = order?.status === "SHIPPED" || order?.status === "DELIVERED";
+
+  const openReviewForm = (medicineId: string) => {
+    setReviewDrafts((prev) => ({
+      ...prev,
+      [medicineId]: {
+        open: true,
+        rating: prev[medicineId]?.rating ?? 5,
+        comment: prev[medicineId]?.comment ?? "",
+        submitting: false,
+      },
+    }));
+  };
+
+  const updateReviewDraft = (
+    medicineId: string,
+    patch: Partial<{ open: boolean; rating: number; comment: string; submitting: boolean }>
+  ) => {
+    setReviewDrafts((prev) => ({
+      ...prev,
+      [medicineId]: {
+        open: prev[medicineId]?.open ?? true,
+        rating: prev[medicineId]?.rating ?? 5,
+        comment: prev[medicineId]?.comment ?? "",
+        submitting: prev[medicineId]?.submitting ?? false,
+        ...patch,
+      },
+    }));
+  };
+
+  const submitReview = async (medicineId: string) => {
+    if (!canReviewThisOrder) {
+      toast.error("Review can be added only for shipped or delivered orders.");
+      return;
+    }
+
+    const draft = reviewDrafts[medicineId] || { open: true, rating: 5, comment: "", submitting: false };
+    if (!draft.comment.trim()) {
+      toast.error("Please write a comment before submitting review.");
+      return;
+    }
+
+    try {
+      updateReviewDraft(medicineId, { submitting: true });
+      await createMedicineReview({
+        medicineId,
+        rating: draft.rating,
+        comment: draft.comment.trim(),
+      });
+
+      const refreshed = await getMedicineReviews(medicineId);
+      setReviewsByMedicine((prev) => ({ ...prev, [medicineId]: refreshed }));
+      updateReviewDraft(medicineId, { comment: "", rating: 5, submitting: false, open: false });
+      toast.success("Review submitted successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to submit review";
+      toast.error(message);
+      updateReviewDraft(medicineId, { submitting: false });
     }
   };
 
@@ -231,28 +316,114 @@ export default function CustomerOrderDetailsPage({ params }: { params: Promise<{
               order.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  {item.medicine?.imageUrl && (
-                    <img
-                      src={item.medicine.imageUrl}
-                      alt={item.medicine.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-white">{item.medicine?.name || 'Unknown Medicine'}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {item.medicine?.manufacturer}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      ${item.price ? item.price.toFixed(2) : '0.00'} × {item.quantity || 0}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    {item.medicine?.imageUrl && (
+                      <img
+                        src={item.medicine.imageUrl}
+                        alt={item.medicine.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900 dark:text-white">{item.medicine?.name || 'Unknown Medicine'}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.medicine?.manufacturer}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        ${item.price ? item.price.toFixed(2) : '0.00'} × {item.quantity || 0}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      ${((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                    </p>
+
+                  <div className="mt-4 rounded-md border border-gray-200 dark:border-gray-600 p-3 bg-white dark:bg-gray-900">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        Reviews: {reviewsByMedicine[item.medicine.id]?.length || 0}
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openReviewForm(item.medicine.id)}
+                        disabled={!canReviewThisOrder}
+                        className="border-gray-300 dark:border-gray-600"
+                      >
+                        Add Review
+                      </Button>
+                    </div>
+
+                    {!canReviewThisOrder && (
+                      <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                        You can review this medicine after order status is SHIPPED or DELIVERED.
+                      </p>
+                    )}
+
+                    {reviewDrafts[item.medicine.id]?.open && (
+                      <div className="mt-3 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <label htmlFor={`rating-${item.medicine.id}`} className="text-sm text-gray-600 dark:text-gray-300">
+                            Rating
+                          </label>
+                          <select
+                            id={`rating-${item.medicine.id}`}
+                            value={reviewDrafts[item.medicine.id]?.rating ?? 5}
+                            onChange={(e) => updateReviewDraft(item.medicine.id, { rating: Number(e.target.value) })}
+                            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-sm"
+                          >
+                            <option value={5}>5</option>
+                            <option value={4}>4</option>
+                            <option value={3}>3</option>
+                            <option value={2}>2</option>
+                            <option value={1}>1</option>
+                          </select>
+                        </div>
+
+                        <textarea
+                          value={reviewDrafts[item.medicine.id]?.comment ?? ""}
+                          onChange={(e) => updateReviewDraft(item.medicine.id, { comment: e.target.value })}
+                          placeholder="Write your review..."
+                          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm"
+                          rows={3}
+                        />
+
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => submitReview(item.medicine.id)}
+                            disabled={reviewDrafts[item.medicine.id]?.submitting}
+                          >
+                            {reviewDrafts[item.medicine.id]?.submitting ? "Submitting..." : "Submit"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateReviewDraft(item.medicine.id, { open: false })}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {(reviewsByMedicine[item.medicine.id] || []).length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        {(reviewsByMedicine[item.medicine.id] || []).slice(0, 3).map((review) => (
+                          <div key={review.id} className="rounded border border-gray-200 dark:border-gray-700 p-2 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-gray-800 dark:text-gray-200">{review.user?.name || "Customer"}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{review.rating}/5</span>
+                            </div>
+                            <p className="mt-1 text-gray-600 dark:text-gray-300">{review.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

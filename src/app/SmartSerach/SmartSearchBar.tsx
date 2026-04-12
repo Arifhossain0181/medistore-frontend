@@ -69,7 +69,8 @@ export default function SmartSearchBar() {
       }
 
       if (data.success) {
-        setResults(data.data.medicines.slice(0, 6)); // dropdown-এ max 6
+        const meds = data.data.medicines.slice(0, 6);
+        setResults(meds); // dropdown-এ max 6
         setKeywords(data.data.keywords || []);
         setMedicineSuggestions(data.data.medicineSuggestions || data.data.keywords || []);
         setAiAdvice(data.data.aiAdvice || data.data.aiSuggestion || null);
@@ -102,7 +103,7 @@ export default function SmartSearchBar() {
   const handleAddToCart = (med: Medicine) => {
     if (!isAuthenticated) {
       toast.error('Please login to add items to cart');
-      router.push('/login?redirect=/smart-search');
+      router.push('/login');
       return;
     }
 

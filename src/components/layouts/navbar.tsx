@@ -1,45 +1,32 @@
 "use client";
 
-import { Menu, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { MouseEvent } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X, LogOut, ChevronDown, UserRound, SunMoon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authstore";
 import { toast } from "sonner";
 import axios from "axios";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { ModeToggle } from "./modetoggle";
 
 
 interface MenuItem {
   title: string;
   url: string;
-  description?: string;
-  icon?: React.ReactNode;
-  items?: MenuItem[];
+  children?: { title: string; url: string }[];
 }
 
 interface Navbar1Props {
@@ -73,23 +60,19 @@ const Navbar = ({
   },
   menu = [
     { title: "Home", url: "/" },
+    { title: "Shop", url: "/shop" },
+    { title: "About", url: "/about" },
+    { title: "Cart", url: "/cart" },
+    { title: "Chat", url: "/chatbot" },
     {
-      title: "About",
-      url: "/about",
-      
-    },
-    {
-      title: "Shop",
-      url: "/shop",
-      
-    },
-    {
-      title: "Cart",
-      url: "/cart",
-    },
-    {
-      title: "Smart Search",
-      url: "/smart-search",
+      title: "Services",
+      url: "/services",
+      children: [
+        { title: "Fast Delivery", url: "/services?focus=delivery" },
+        { title: "Trusted Network", url: "/services?focus=trusted" },
+        { title: "Clinical Chatbot", url: "/chatbot" },
+        { title: "Checkout Support", url: "/checkout" },
+      ],
     },
   ],
   auth = {
@@ -100,21 +83,40 @@ const Navbar = ({
 }: Navbar1Props) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
   
   // Show extra tools for any logged-in role (customer, delivery, admin, super-admin)
   const menuItems = user
     ? [
         ...menu,
         { title: "Dashboard", url: "/dashboard" },
-        { title: "Prescription Reader", url: "/prescription-reader" },
       ]
     : menu;
   
   const loginUrl = pathname && pathname !== "/login" && pathname !== "/signup" 
     ? `${auth.login.url}?redirect=${encodeURIComponent(pathname)}` 
     : auth.login.url;
+
+  const isActive = (url: string) => {
+    if (url === "/") {
+      return pathname === "/";
+    }
+    return Boolean(pathname?.startsWith(url));
+  };
   
   const handleLogout = async () => {
     try {
@@ -138,204 +140,245 @@ const Navbar = ({
       router.push("/");
     }
   };
+
+  const openChatWidget = () => {
+    window.dispatchEvent(new Event("medistore:open-chat"));
+    setMobileOpen(false);
+  };
+
+  const handleNavigation = (e: MouseEvent<HTMLAnchorElement>, url: string) => {
+    if (url === "/chatbot") {
+      e.preventDefault();
+      openChatWidget();
+      return;
+    }
+
+    setMobileOpen(false);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
     
   return (
-    <section className={cn("py-4", className)}>
-      <div className="container mx-auto px-4 ">
-        {/* Desktop Menu */}
-        <nav className="hidden items-center justify-between lg:flex">
-          <div className="flex items-center gap-6">
-            {/* Logo */}
-            <Link href={logo.url} className="flex items-center gap-2 ">
-              <Image
-                src={logo.src}
-                alt={logo.alt}
-                width={32}
-                height={32}
-                className="max-h-8 w-auto dark:invert"
-              />
-              <span className="text-lg tracking-tighter font-bold">
-                {logo.title}
-              </span>
-            </Link>
-            <div className="flex items-center gap-4 font-bold hover:text-primary">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  {menuItems.map((item) => renderMenuItem(item))}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </div>
+    <motion.header
+      initial={{ y: -90, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className={cn(
+        "fixed top-0 right-0 left-0 z-50 transition-all duration-500",
+        scrolled
+          ? "bg-white/78 py-2.5 shadow-[0_12px_40px_-24px_rgba(12,74,110,0.5)] backdrop-blur-xl dark:bg-slate-950/72"
+          : "bg-transparent py-4",
+        className,
+      )}
+    >
+      <div className="container mx-auto px-4">
+        <div className="relative flex items-center justify-between rounded-2xl border border-sky-400/15 bg-white/70 px-4 py-2.5 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/55">
+          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-r from-sky-400/7 via-emerald-300/6 to-cyan-400/7 dark:from-sky-500/7 dark:via-emerald-500/5 dark:to-cyan-500/6" />
+
+          <Link href={logo.url} className="relative z-10 flex items-center gap-2.5">
+            <Image
+              src={logo.src}
+              alt={logo.alt}
+              width={34}
+              height={34}
+              className="max-h-8 w-auto"
+            />
+            <span className="text-lg tracking-tight font-bold text-slate-900 dark:text-white">
+              {logo.title}
+            </span>
+          </Link>
+
+          <div className="relative z-10 hidden items-center gap-1 lg:flex">
+            {menuItems.map((item) => {
+              const active = isActive(item.url);
+              if (item.children?.length) {
+                return (
+                  <DropdownMenu key={item.title}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          "relative inline-flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300",
+                          active
+                            ? "text-sky-700 dark:text-sky-300"
+                            : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
+                        )}
+                      >
+                        {item.title}
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 border-slate-200 bg-white/95 dark:border-slate-700 dark:bg-slate-900/95">
+                      {item.children.map((child, idx) => (
+                          <DropdownMenuItem key={`${child.url}-${child.title}-${idx}`} asChild>
+                          <Link href={child.url} onClick={(e) => handleNavigation(e, child.url)}>{child.title}</Link>
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/services">See all services</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.title}
+                  href={item.url}
+                  onClick={(e) => handleNavigation(e, item.url)}
+                  className={cn(
+                    "relative rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-300",
+                    active
+                      ? "text-sky-700 dark:text-sky-300"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white",
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-pill"
+                      className="absolute inset-0 rounded-lg bg-linear-to-r from-sky-200/65 via-emerald-100/70 to-cyan-200/60 dark:from-sky-900/50 dark:via-emerald-900/45 dark:to-cyan-900/45"
+                      transition={{ type: "spring", stiffness: 320, damping: 28 }}
+                    />
+                  )}
+                  <span className="relative z-10">{item.title}</span>
+                </Link>
+              );
+            })}
           </div>
-          <div className="flex gap-2 items-center">
-            <ModeToggle />
 
-            {user ? (
-              <>
-                <span className="text-sm font-medium hidden md:inline">Welcome, {user.name}</span>
-                <Button onClick={handleLogout} variant="outline" size="sm">
-                  <LogOut className="size-4 mr-2" />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={loginUrl}>{auth.login.title}</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        <div className="block lg:hidden">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href={logo.url} className="flex items-center gap-2">
-              <Image
-                src={logo.src}
-                alt={logo.alt}
-                width={32}
-                height={32}
-                className="max-h-8 w-auto dark:invert"
-              />
-            </Link>
-            <div className="flex items-center gap-2">
-              <ModeToggle />
-            
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>
-                    <a href={logo.url} className="flex items-center gap-2">
-                      <Image
-                        src={logo.src}
-                        alt={logo.alt}
-                        width={32}
-                        height={32}
-                        className="max-h-8 w-auto dark:invert"
-                      />
-                    </a>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-6 p-4">
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="flex w-full flex-col gap-4"
-                  >
-                    {menuItems.map((item) => renderMobileMenuItem(item))}
-                  </Accordion>
-
-                  <div className="flex flex-col gap-3">
-                    <ModeToggle></ModeToggle>
-                    {user ? (
-                      <>
-                        <div className="text-sm font-medium py-2">Welcome, {user.name}</div>
-                        <Button onClick={handleLogout} variant="outline">
-                          <LogOut className="size-4 mr-2" />
-                          Logout
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button asChild variant="outline">
-                          <Link href={loginUrl}>{auth.login.title}</Link>
-                        </Button>
-                        <Button asChild>
-                          <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+          <div className="relative z-10 flex items-center gap-2">
+            <div className="hidden items-center gap-2 md:flex">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="border-slate-300/80 bg-white/65 hover:bg-white dark:border-slate-700 dark:bg-slate-900/70">
+                    <UserRound className="mr-2 size-4" />
+                    {user ? "Profile" : "Account"}
+                    <ChevronDown className="ml-2 size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 border-slate-200 bg-white/95 dark:border-slate-700 dark:bg-slate-900/95">
+                  {user ? (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard">Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 size-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href={loginUrl}>{auth.login.title}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={toggleTheme}>
+                    <SunMoon className="mr-2 size-4" />
+                    {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
+
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.04 }}
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="rounded-md border border-slate-300/80 bg-white/75 p-2 text-slate-700 lg:hidden dark:border-slate-700 dark:bg-slate-900/75 dark:text-slate-200"
+            >
+              {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+            </motion.button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -14, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+              className="mt-2 overflow-hidden rounded-2xl border border-sky-300/25 bg-white/90 px-4 py-4 backdrop-blur-xl lg:hidden dark:border-slate-700/70 dark:bg-slate-900/88"
+            >
+              <div className="flex flex-col gap-1.5">
+                {menuItems.map((item) => {
+                  const active = isActive(item.url);
+                  return (
+                    <div key={item.title}>
+                      <Link
+                        href={item.url}
+                        onClick={(e) => handleNavigation(e, item.url)}
+                        className={cn(
+                          "rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors",
+                          active
+                            ? "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
+                            : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                      {item.children?.length ? (
+                        <div className="ml-3 mt-1 flex flex-col">
+                          {item.children.map((child, idx) => (
+                            <Link
+                              key={`${child.url}-${child.title}-${idx}`}
+                              href={child.url}
+                              onClick={(e) => handleNavigation(e, child.url)}
+                              className="rounded-lg px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                            >
+                              {child.title}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
+                {user ? (
+                  <>
+                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Welcome, {user.name}</div>
+                    <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
+                      <Link href="/dashboard">Profile</Link>
+                    </Button>
+                    <Button onClick={handleLogout} variant="outline" className="border-slate-300 dark:border-slate-700">
+                      <LogOut className="mr-2 size-4" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
+                      <Link href={loginUrl}>{auth.login.title}</Link>
+                    </Button>
+                    <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
+                      <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                    </Button>
+                  </>
+                )}
+                <Button onClick={toggleTheme} variant="outline" className="border-slate-300 dark:border-slate-700">
+                  <SunMoon className="mr-2 size-4" />
+                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </section>
-  );
-};
-
-const renderMenuItem = (item: MenuItem) => {
-  if (item.items) {
-    return (
-      <NavigationMenuItem key={item.title}>
-        <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-        <NavigationMenuContent className="bg-popover text-popover-foreground">
-          {item.items.map((subItem) => (
-            <NavigationMenuLink asChild key={subItem.title} className="w-80">
-              <SubMenuLink item={subItem} />
-            </NavigationMenuLink>
-          ))}
-        </NavigationMenuContent>
-      </NavigationMenuItem>
-    );
-  }
-
-  return (
-    <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink asChild>
-        <Link
-          href={item.url}
-          className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
-        >
-          {item.title}
-        </Link>
-      </NavigationMenuLink>
-    </NavigationMenuItem>
-  );
-};
-
-const renderMobileMenuItem = (item: MenuItem) => {
-  if (item.items) {
-    return (
-      <AccordionItem key={item.title} value={item.title} className="border-b-0">
-        <AccordionTrigger className="text-md py-0 font-semibold hover:no-underline">
-          {item.title}
-        </AccordionTrigger>
-        <AccordionContent className="mt-2">
-          {item.items.map((subItem) => (
-            <SubMenuLink key={subItem.title} item={subItem} />
-          ))}
-        </AccordionContent>
-      </AccordionItem>
-    );
-  }
-
-  return (
-    <Link key={item.title} href={item.url} className="text-md font-semibold">
-      {item.title}
-    </Link>
-  );
-};
-
-const SubMenuLink = ({ item }: { item: MenuItem }) => {
-  return (
-    <Link
-      className="flex min-w-80 flex-row gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-muted hover:text-accent-foreground"
-      href={item.url}
-    >
-      <div className="text-foreground">{item.icon}</div>
-      <div>
-        <div className="text-sm font-semibold">{item.title}</div>
-        {item.description && (
-          <p className="text-sm leading-snug text-muted-foreground">
-            {item.description}
-          </p>
-        )}
-      </div>
-    </Link>
+    </motion.header>
   );
 };
 

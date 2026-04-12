@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getSuperAdminReports, type SuperAdminReportSummary } from "@/lib/api/super-admin";
+import AIOrderSummary from "../../AIorder summary/Aiordersummary";
 
 export default function SuperAdminDashboardPage() {
   const [summary, setSummary] = useState<SuperAdminReportSummary | null>(null);
@@ -96,6 +97,8 @@ export default function SuperAdminDashboardPage() {
             <p className="mt-2 text-sm text-slate-600">View platform health and revenue KPIs.</p>
           </Link>
         </div>
+
+        <AIOrderSummary role="SUPER_ADMIN" />
       </div>
     </div>
   );

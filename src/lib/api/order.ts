@@ -95,7 +95,8 @@ export async function getMyOrders() {
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to fetch orders: ${res.status}`);
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.message || `Failed to fetch orders: ${res.status}`);
     }
     
     const data = await res.json();

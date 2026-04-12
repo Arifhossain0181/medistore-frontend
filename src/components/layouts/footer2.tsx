@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import logs from "../../../public/Gemini_Generated_Image_pp41bmpp41bmpp41.png";
 import { Logo, LogoImage, LogoText } from "@/components/logo";
+import Link from "next/link";
+import { Facebook, Instagram, Linkedin, MapPin, Phone, Mail } from "lucide-react";
 
 interface MenuItem {
   title: string;
@@ -41,43 +43,44 @@ const Footer2 = ({
       title: "Shop",
       links: [
         { text: "All Medicines", url: "/shop" },
-        { text: "Pain Relief", url: "/shop?category=pain-relief" },
-        { text: "Cold & Flu", url: "/shop?category=cold-flu" },
-        { text: "Vitamins", url: "/shop?category=vitamins" },
-        { text: "First Aid", url: "/shop?category=first-aid" },
+        { text: "Smart Search", url: "/smart-search" },
+        { text: "Cart", url: "/cart" },
+        { text: "Checkout", url: "/checkout" },
+        { text: "Payment", url: "/Payment" },
       ],
     },
     {
       title: "Customer Service",
       links: [
-        { text: "My Account", url: "/profile" },
-        { text: "My Orders", url: "/orders" },
-        { text: "Track Order", url: "/orders" },
-        { text: "Shopping Cart", url: "/cart" },
-        { text: "Help & FAQs", url: "/help" },
+        { text: "Dashboard", url: "/dashboard" },
+        { text: "My Orders", url: "/customer/orders" },
+        { text: "Delivery Dashboard", url: "/delivery" },
+        { text: "Clinical Chat", url: "/chatbot" },
+        { text: "Register", url: "/signup" },
       ],
     },
     {
       title: "Company",
       links: [
         { text: "About Us", url: "/about" },
-        { text: "Contact", url: "/contact" },
-        { text: "Become a Seller", url: "/register?role=seller" },
+        { text: "Home", url: "/" },
+        { text: "Shop", url: "/shop" },
+        { text: "Become a Seller", url: "/signup?role=seller" },
       ],
     },
     {
       title: "Legal",
       links: [
-        { text: "Privacy Policy", url: "/privacy" },
-        { text: "Terms of Service", url: "/terms" },
-        { text: "Return Policy", url: "/returns" },
+        { text: "Login", url: "/login" },
+        { text: "Sign Up", url: "/signup" },
+        { text: "Prescription Reader", url: "/prescription-reader" },
       ],
     },
   ],
   copyright = `© ${new Date().getFullYear()} MediStore. All rights reserved.`,
   bottomLinks = [
-    { text: "Terms and Conditions", url: "/terms" },
-    { text: "Privacy Policy", url: "/privacy" },
+    { text: "Shop", url: "/shop" },
+    { text: "About", url: "/about" },
   ],
 }: Footer2Props) => {
   return (
@@ -98,6 +101,16 @@ const Footer2 = ({
                 </Logo>
               </div>
               <p className="mt-4 font-bold">{tagline}</p>
+              <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                <p className="flex items-center gap-2"><MapPin className="size-4" /> 123 Health Avenue, Dhaka</p>
+                <p className="flex items-center gap-2"><Phone className="size-4" /> +880 1900-000000</p>
+                <p className="flex items-center gap-2"><Mail className="size-4" /> support@medistore.com</p>
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="rounded-full border border-gray-600 p-2 hover:text-cyan-300"><Facebook className="size-4" /></a>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="rounded-full border border-gray-600 p-2 hover:text-cyan-300"><Instagram className="size-4" /></a>
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="rounded-full border border-gray-600 p-2 hover:text-cyan-300"><Linkedin className="size-4" /></a>
+              </div>
             </div>
             {menuItems.map((section, sectionIdx) => (
               <div key={sectionIdx}>
@@ -108,7 +121,7 @@ const Footer2 = ({
                       key={linkIdx}
                       className="font-medium hover:text-primary"
                     >
-                      <a href={link.url}>{link.text}</a>
+                      <Link href={link.url}>{link.text}</Link>
                     </li>
                   ))}
                 </ul>
@@ -120,7 +133,7 @@ const Footer2 = ({
             <ul className="flex gap-4">
               {bottomLinks.map((link, linkIdx) => (
                 <li key={linkIdx} className="underline hover:text-primary">
-                  <a href={link.url}>{link.text}</a>
+                  <Link href={link.url}>{link.text}</Link>
                 </li>
               ))}
             </ul>

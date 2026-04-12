@@ -56,6 +56,16 @@ export default function CustomerOrdersPage() {
       setOrders(ordersArray);
     } catch (error) {
       console.error("Error loading orders:", error);
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+
+      if (message.includes("unauthorized") || message.includes("failed to fetch orders: 401")) {
+        if (!silent) {
+          toast.error("Please login to view your orders.");
+        }
+        router.push("/auth/login?redirect=/customer/orders");
+        return;
+      }
+
       if (!silent) {
         toast.error("Failed to load orders. Please try again.");
       }

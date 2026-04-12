@@ -46,9 +46,21 @@ export default function PaymentSuccess() {
 
         if (pendingRaw) {
           const pendingOrderData = JSON.parse(pendingRaw) as PendingOrderData;
-          await createOrder(pendingOrderData);
-          clearCart();
-          sessionStorage.removeItem('pendingOrderData');
+          try {
+            await createOrder(pendingOrderData);
+            clearCart();
+            sessionStorage.removeItem('pendingOrderData');
+          } catch (orderErr: any) {
+            const orderMessage = orderErr?.message || '';
+            if (/unauthorized|forbidden/i.test(orderMessage)) {
+              setState('success');
+              setMessage('Payment verified হয়েছে, কিন্তু order confirm করতে আবার login করতে হবে।');
+              setMedicineId(result?.medicineId || '');
+              return;
+            }
+
+            throw orderErr;
+          }
         }
 
         setState('success');

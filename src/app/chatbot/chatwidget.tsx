@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from 'react';
+import { MessageCircle, SendHorizonal, Sparkles, Trash2, X } from 'lucide-react';
 
 type Role = 'user' | 'assistant';
 
@@ -39,6 +40,17 @@ export default function ChatWidget() {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  useEffect(() => {
+    const handleOpenChat = () => {
+      setOpen(true);
+    };
+
+    window.addEventListener('medistore:open-chat', handleOpenChat);
+    return () => {
+      window.removeEventListener('medistore:open-chat', handleOpenChat);
+    };
+  }, []);
 
   const sendMessage = async (text?: string) => {
     const content = text || input.trim();
@@ -120,32 +132,42 @@ export default function ChatWidget() {
       {/* Floating Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center"
+        aria-label={open ? 'Close chat' : 'Open chat'}
+        className="fixed right-4 bottom-4 z-50 flex h-14 w-14 items-center justify-center rounded-full border border-emerald-200/60 bg-linear-to-br from-emerald-500 to-cyan-500 text-white shadow-[0_18px_40px_-16px_rgba(15,23,42,0.65)] transition-transform duration-300 hover:scale-105 dark:border-slate-700 sm:right-6 sm:bottom-6"
       >
-        💬
+        {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
       </button>
 
       {/* Chat Box */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-85 h-120 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl flex flex-col">
-          <div className="flex items-center justify-between border-b px-3 py-2">
-            <div>
-              <p className="font-semibold text-sm">MediStore AI Assistant</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Prisma-backed medicine helper</p>
+        <div className="fixed right-4 bottom-20 left-4 z-50 flex h-[72vh] max-h-[640px] w-auto flex-col overflow-hidden rounded-2xl border border-emerald-100 bg-slate-50/95 shadow-[0_28px_70px_-34px_rgba(15,23,42,0.75)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95 sm:right-6 sm:bottom-24 sm:left-auto sm:h-[70vh] sm:w-[calc(100vw-2rem)] sm:max-w-[390px]">
+          <div className="flex items-center justify-between border-b border-emerald-100 bg-white/70 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/80">
+            <div className="flex items-start gap-2">
+              <div className="rounded-md bg-emerald-100 p-1.5 dark:bg-emerald-900/45">
+                <Sparkles className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">MediStore AI Assistant</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Prisma-backed medicine helper</p>
+              </div>
             </div>
-            <button onClick={clearChat} className="text-xs text-blue-600 hover:underline">
+            <button
+              onClick={clearChat}
+              className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
               Clear
             </button>
           </div>
           
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3">
-            <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex-1 overflow-y-auto px-2.5 py-3 sm:px-3">
+            <div className="mb-3 flex flex-wrap gap-2">
               {SUGGESTED_QUESTIONS.map((question) => (
                 <button
                   key={question}
                   onClick={() => sendMessage(question)}
-                  className="rounded-full border px-3 py-1 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs text-slate-700 transition hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
                   {question}
                 </button>
@@ -153,32 +175,52 @@ export default function ChatWidget() {
             </div>
 
             {messages.map((msg, i) => (
-              <div key={i} className="mb-2">
-                <b>{msg.role}:</b> {msg.content}
+              <div
+                key={i}
+                className={`mb-3 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                    msg.role === 'user'
+                      ? 'bg-emerald-600 text-white'
+                      : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                  }`}
+                >
+                  {msg.content}
+                </div>
               </div>
             ))}
 
-            {loading && <p>Typing...</p>}
+            {loading && (
+              <div className="mb-2 inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                Typing
+                <span className="animate-pulse">.</span>
+                <span className="animate-pulse [animation-delay:150ms]">.</span>
+                <span className="animate-pulse [animation-delay:300ms]">.</span>
+              </div>
+            )}
 
             <div ref={bottomRef} />
           </div>
 
           {/* Input */}
-          <div className="p-3 flex gap-2">
+          <div className="flex gap-2 border-t border-emerald-100 bg-white/75 p-2.5 dark:border-slate-700 dark:bg-slate-900/85 sm:p-3">
             <input
               ref={inputRef}
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="কিছু জিজ্ঞেস করুন..."
-              className="flex-1 border px-3 py-2 rounded"
+              className="flex-1 rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none ring-emerald-300 placeholder:text-slate-400 focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
 
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || loading}
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              Send
+              <SendHorizonal className="h-4 w-4" />
+              <span className="hidden sm:inline">Send</span>
             </button>
           </div>
         </div>

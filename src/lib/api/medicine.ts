@@ -1,4 +1,15 @@
 import axios from 'axios';
+
+export type MedicineReview = {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  user?: {
+    name?: string;
+  };
+};
+
 export async function getAllMedicines(){
     console.log("Fetching from:", `/api/medicines`)
     const res = await fetch(`/api/medicines`, {
@@ -42,6 +53,67 @@ export async function getSingleMedicine(id: string){
     // Extract the actual medicine data
     return response.data || response;
 }
+
+  export async function incrementMedicineView(id: string) {
+    const url = `/api/medicines/${id}/view`;
+
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+        const beaconOk = navigator.sendBeacon(url);
+        if (beaconOk) {
+          return;
+        }
+      }
+
+      await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        keepalive: true,
+      });
+    } catch (error) {
+      console.error("Failed to increment medicine view:", error);
+    }
+  }
+
+  export async function getMedicineReviews(medicineId: string): Promise<MedicineReview[]> {
+    const res = await fetch(`/api/reviews/medicine/${medicineId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch reviews: ${res.status} ${res.statusText}`);
+    }
+
+    const response = await res.json();
+    return response.data || [];
+  }
+
+  export async function createMedicineReview(payload: {
+    medicineId: string;
+    rating: number;
+    comment: string;
+  }): Promise<MedicineReview> {
+    const res = await fetch(`/api/reviews`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const response = await res.json().catch(() => ({}));
+
+    if (!res.ok || response?.success === false) {
+      throw new Error(response?.message || `Failed to create review: ${res.status} ${res.statusText}`);
+    }
+
+    return response.data;
+  }
 
 export const fetchCategories = {
   getAllCategories: async function() {

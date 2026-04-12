@@ -1,5 +1,6 @@
 
 import Link from "next/link";
+import AIOrderSummary from "../../AIorder summary/Aiordersummary";
 
 export default function AdminDashboardPage() {
   return (
@@ -58,6 +59,8 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-sm text-slate-600">Approve or reject delivery man applications.</p>
           </Link>
         </div>
+
+        <AIOrderSummary role="ADMIN" />
       </div>
     </div>
   );
