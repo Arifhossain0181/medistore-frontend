@@ -93,14 +93,25 @@ export async function getMyOrders() {
       credentials: "include",
       cache: "no-cache"
     });
-    
-    if (!res.ok) {
-      const payload = await res.json().catch(() => ({}));
-      throw new Error(payload?.message || `Failed to fetch orders: ${res.status}`);
+
+    if (res.ok) {
+      const data = await res.json();
+      return data?.data || data || [];
     }
-    
-    const data = await res.json();
-    return data?.data || data || [];
+
+    // Fallback to local Next.js proxy route if direct backend cookie/context is not accepted.
+    const fallbackRes = await fetch(`/api/orders`, {
+      credentials: "include",
+      cache: "no-cache"
+    });
+
+    if (!fallbackRes.ok) {
+      const payload = await fallbackRes.json().catch(() => ({}));
+      throw new Error(payload?.message || `Failed to fetch orders: ${fallbackRes.status}`);
+    }
+
+    const fallbackData = await fallbackRes.json();
+    return fallbackData?.data || fallbackData || [];
   } catch (error) {
     console.error("Error fetching orders:", error);
     throw error;

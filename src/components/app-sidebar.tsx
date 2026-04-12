@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Home,
   ShoppingBag,
   ShoppingCart,
   Package,
@@ -33,36 +32,36 @@ import { useRouter } from "next/navigation";
 
 // Menu items based on user role
 const customerMenuItems = [
-    {title: "Home", url: "/", icon: LayoutDashboard },
-
+  { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Shop", url: "/shop", icon: ShoppingBag },
   { title: "Checkout", url: "/checkout", icon: ShoppingCart },
   { title: "My Orders", url: "/customer/orders", icon: Package },
-  { title: "Profile", url: "/customer/profile", icon: User },
+  { title: "My Profile", url: "/dashboard/profile", icon: User },
 ];
 
 const sellerMenuItems = [
-    {title: "Home", url: "/", icon: LayoutDashboard },
-
+  { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/seller/dashboard", icon: LayoutDashboard },
   { title: "Manage Medicines", url: "/seller/medicines", icon: Package },
   { title: "Add Medicine", url: "/seller/add", icon: PlusCircle },
   { title: "Orders", url: "/seller/orders", icon: FileText },
+  { title: "My Profile", url: "/dashboard/profile", icon: User },
 ];
 
 const adminMenuItems = [
-  {title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Medicines", url: "/admin/medicines", icon: Package },
   { title: "Orders", url: "/admin/orders", icon: FileText },
   { title: "Users", url: "/admin/users", icon: Users },
   { title: "Delivery Applications", url: "/admin/delivery-applications", icon: Truck },
   { title: "Categories", url: "/admin/categories", icon: Settings },
+  { title: "My Profile", url: "/dashboard/profile", icon: User },
 ];
 
 const superAdminMenuItems = [
-  {title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/super-admin/dashboard", icon: LayoutDashboard },
   { title: "All Medicines", url: "/super-admin/medicines", icon: Package },
   { title: "All Orders", url: "/super-admin/orders", icon: FileText },
@@ -70,20 +69,20 @@ const superAdminMenuItems = [
   { title: "Admins", url: "/super-admin/admins", icon: Shield },
   { title: "Reports", url: "/super-admin/reports", icon: FileText },
   { title: "Settings", url: "/super-admin/settings", icon: Settings },
+  { title: "My Profile", url: "/dashboard/profile", icon: User },
 ];
 
 const deliveryManMenuItems = [
-  {title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Home", url: "/", icon: LayoutDashboard },
   { title: "Dashboard", url: "/delivery/dashboard", icon: LayoutDashboard },
   { title: "Deliveries", url: "/delivery/orders", icon: Truck },
   { title: "Active Orders", url: "/delivery/active", icon: Package },
   { title: "Completed", url: "/delivery/completed", icon: FileText },
-  { title: "Profile", url: "/delivery/profile", icon: User },
+  { title: "My Profile", url: "/dashboard/profile", icon: User },
 ];
 
 export function AppSidebar() {
   const user = useAuthStore((s) => s.user);
-  const router = useRouter();
 
   // Determine which menu items to show based on role
   let menuItems = customerMenuItems;
@@ -100,7 +99,7 @@ export function AppSidebar() {
     dashboardTitle = "Super Admin Dashboard";
   } else if (user?.role === "DELIVERY_MAN") {
     menuItems = deliveryManMenuItems;
-    dashboardTitle = "Delivery Management";
+    dashboardTitle = "Delivery Man Dashboard";
   }
 
   return (
