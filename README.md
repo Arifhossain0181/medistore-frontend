@@ -47,6 +47,21 @@ This is the frontend for the Medistore application, built with Next.js and TypeS
 - UI is built with modular components for easy reuse and maintenance
 - Follows best practices for folder structure and code organization
 
+## Demo Login Buttons
+The login form includes quick-fill buttons for:
+- Customer
+- Super Admin
+
+Default quick-fill values:
+- Customer: `customer@gmail.com` / `Passwordkhan`
+- Super Admin: `superadmin@gmail.com` / `Passwordkhan`
+
+You can override these values with environment variables:
+- `NEXT_PUBLIC_DEMO_CUSTOMER_EMAIL`
+- `NEXT_PUBLIC_DEMO_CUSTOMER_PASSWORD`
+- `NEXT_PUBLIC_DEMO_SUPER_ADMIN_EMAIL`
+- `NEXT_PUBLIC_DEMO_SUPER_ADMIN_PASSWORD`
+
 ## Requirements
 - Node.js 18+
 - npm 9+

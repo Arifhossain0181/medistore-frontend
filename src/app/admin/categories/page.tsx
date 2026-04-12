@@ -1,7 +1,9 @@
 "use client";
 import { fetchCategories, createCategory, updateCategory, deleteCategory } from "@/lib/api/medicine";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 type Category = {
   id: string;
@@ -15,6 +17,8 @@ export default function AdminCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   const loadCategories = async () => {
     try {
@@ -35,6 +39,16 @@ export default function AdminCategoriesPage() {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  const totalPages = Math.max(1, Math.ceil(categories.length / pageSize));
+  const paginatedCategories = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return categories.slice(start, start + pageSize);
+  }, [categories, page]);
+
+  useEffect(() => {
+    setPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,19 +140,19 @@ export default function AdminCategoriesPage() {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Manage Categories</h1>
+    <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950 md:p-6">
+      <h1 className="mb-6 text-3xl font-bold text-slate-900 dark:text-slate-100">Manage Categories</h1>
       
       {/* Add New Category Form */}
-      <div className="mb-8 bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
-        <form onSubmit={handleCreate} className="flex gap-4">
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-6 shadow dark:border-slate-700 dark:bg-slate-900">
+        <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-slate-100">Add New Category</h2>
+        <form onSubmit={handleCreate} className="flex flex-col gap-4 sm:flex-row">
           <input
             type="text"
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             placeholder="Category name"
-            className="flex-1 border rounded px-4 py-2"
+            className="flex-1 rounded border border-slate-300 bg-white px-4 py-2 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             disabled={submitting}
           />
           <button
@@ -151,23 +165,27 @@ export default function AdminCategoriesPage() {
         </form>
       </div>
 
-      <div className="mb-4 font-semibold">Total Categories: {categories.length}</div>
+      <div className="mb-4 font-semibold text-slate-800 dark:text-slate-200">Total Categories: {categories.length}</div>
       
       {loading ? (
-        <div className="p-6">Loading categories...</div>
+        <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-32 w-full rounded-lg" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+        </div>
       ) : categories.length === 0 ? (
-        <div className="p-6 text-gray-500">No categories found</div>
+        <div className="p-6 text-gray-500 dark:text-slate-400">No categories found</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((category) => (
-            <div key={category.id} className="border rounded-lg p-4 bg-white shadow">
+          {paginatedCategories.map((category) => (
+            <div key={category.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900">
               {editingId === category.id ? (
                 <div className="space-y-2">
                   <input
                     type="text"
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    className="w-full border rounded px-2 py-1"
+                    className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                     disabled={submitting}
                   />
                   <div className="flex gap-2">
@@ -212,6 +230,13 @@ export default function AdminCategoriesPage() {
           ))}
         </div>
       )}
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        itemLabel={`${categories.length} categories`}
+      />
     </div>
   );
 }

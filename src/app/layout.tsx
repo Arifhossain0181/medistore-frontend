@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConditionalNavbar } from "@/components/layouts/ConditionalNavbar";
 import { ThemeProvider } from "@/Providers/theme.Provider";
 import { AuthHydrator } from "@/Providers/auth-hydrator";
+import { LenisProvider } from "@/Providers/lenis-provider";
 import { ConditionalFooter } from "@/components/layouts/ConditionalFooter";
 import { Toaster } from "@/components/ui/sonner";
 import ChatWidget from "@/app/chatbot/chatwidget";
@@ -39,6 +40,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <LenisProvider />
           <AuthHydrator />
           <ConditionalNavbar />
           <ChatWidget />

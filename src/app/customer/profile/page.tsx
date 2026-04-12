@@ -9,6 +9,7 @@ import { updateUserProfile, getUserProfile, getCustomerDashboardStats } from "@/
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -190,9 +191,10 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-100 bg-white dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
+        <div className="w-full max-w-3xl space-y-4 p-6">
+          <Skeleton className="mx-auto h-24 w-24 rounded-full" />
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-32 w-full rounded-lg" />
         </div>
       </div>
     );

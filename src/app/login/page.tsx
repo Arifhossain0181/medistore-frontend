@@ -1,6 +1,7 @@
 "use client";
 
 import LoginForm from "@/components/features/auth/LoginForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -36,7 +37,15 @@ export default function LoginPage() {
             transition={{ duration: 0.25 }}
             className="rounded-2xl border border-slate-200/85 bg-white/80 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.48)] dark:border-slate-700/75 dark:bg-slate-900/52"
           >
-            <Suspense fallback={<div className="text-center text-sm text-slate-500">Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="space-y-3">
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                </div>
+              }
+            >
               <LoginForm />
             </Suspense>
           </motion.div>

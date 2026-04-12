@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuthStore } from "@/store/authstore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -22,7 +23,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   }, [hasHydrated, pathname, router, user]);
 
   if (!hasHydrated) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="space-y-4 p-6">
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-40 w-full rounded-lg" />
+      </div>
+    );
   }
 
   if (!user || user.role !== "SUPER_ADMIN") {

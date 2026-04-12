@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -27,11 +28,11 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 };
 
-export default function ServicesPage() {
+function ServicesPageContent() {
   const searchParams = useSearchParams();
-  const focus = searchParams.get("focus");
-  const isDeliveryFocus = focus === "delivery";
-  const isTrustedFocus = focus === "trusted";
+  const focus = (searchParams.get("focus") || "").toLowerCase();
+  const isDeliveryFocus = ["delivery", "fast-delivery", "fast"].includes(focus);
+  const isTrustedFocus = ["trusted", "trusted-network", "network"].includes(focus);
   const detailMode = isDeliveryFocus ? "delivery" : isTrustedFocus ? "trusted" : "all";
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -77,6 +78,17 @@ export default function ServicesPage() {
 
     void loadData();
   }, []);
+
+  useEffect(() => {
+    if (detailMode === "delivery") {
+      document.getElementById("fast-delivery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    if (detailMode === "trusted") {
+      document.getElementById("trusted-network")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [detailMode]);
 
   const inStock = useMemo(() => medicines.filter((item) => (item.stock || 0) > 0).length, [medicines]);
   const trustedSuppliers = useMemo(() => {
@@ -143,7 +155,7 @@ export default function ServicesPage() {
       <section className="mx-auto mt-5 max-w-7xl">
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href="/services?focus=delivery"
+            href="/services?focus=delivery#fast-delivery"
             className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
               isDeliveryFocus
                 ? "border-cyan-300 bg-cyan-100 text-cyan-800 dark:border-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-200"
@@ -153,7 +165,7 @@ export default function ServicesPage() {
             Fast Delivery
           </Link>
           <Link
-            href="/services?focus=trusted"
+            href="/services?focus=trusted#trusted-network"
             className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
               isTrustedFocus
                 ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
@@ -396,6 +408,12 @@ export default function ServicesPage() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
+            href="/checkout"
+            className="rounded-lg bg-cyan-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700"
+          >
+            Checkout Support
+          </Link>
+          <Link
             href="/shop"
             className="rounded-lg bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
           >
@@ -411,5 +429,13 @@ export default function ServicesPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ServicesPage() {
+  return (
+    <Suspense fallback={<main className="bg-slate-50 px-4 pt-32 pb-16 dark:bg-slate-950 md:pt-36"><section className="mx-auto max-w-7xl rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">Loading services...</section></main>}>
+      <ServicesPageContent />
+    </Suspense>
   );
 }

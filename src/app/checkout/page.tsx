@@ -11,6 +11,7 @@ import { Label } from "@/nextjs/ui/label";
 import { Button } from "@/nextjs/ui/button";
 import { toast } from "sonner";
 import { DELIVERY_AREAS } from "@/lib/delivery-areas";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CheckoutPage() {
   const user = useAuthStore((s) => s.user);
@@ -122,7 +123,11 @@ export default function CheckoutPage() {
       window.location.href = session.url;
     } catch (error) {
       console.error("Order error:", error);
-      toast.error("Failed to start payment. Please try again.");
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Failed to start payment. Please try again.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -130,7 +135,18 @@ export default function CheckoutPage() {
 
   // Only allow checkout if user is CUSTOMER
   if (!hasHydrated) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto max-w-6xl p-6">
+        <div className="space-y-4">
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="h-6 w-72" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <Skeleton className="h-96 w-full rounded-lg" />
+            <Skeleton className="h-96 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!user || user.role !== "CUSTOMER") {

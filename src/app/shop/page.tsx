@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Lenis from "lenis";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { HeartIcon, ShoppingCart, Search, Filter } from "lucide-react";
 import { toast } from "sonner";
@@ -58,7 +57,7 @@ const getSafeImageSrc = (imageUrl?: string): string => {
   return "/placeholder.png";
 };
 
-const ShopPage = () => {
+const ShopPageContent = () => {
   const { scrollYProgress } = useScroll();
   const orbY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
 
@@ -73,27 +72,6 @@ const ShopPage = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.1,
-      smoothWheel: true,
-      touchMultiplier: 1.05,
-    });
-
-    let rafId = 0;
-    const raf = (time: number) => {
-      lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    };
-
-    rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-    };
-  }, []);
 
   useEffect(() => {
     const searchFromUrl = searchParams.get("search") || "";
@@ -419,4 +397,10 @@ const ShopPage = () => {
   );
 };
 
-export default ShopPage;
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<section className="px-4 pt-32 pb-12 md:pt-36"><div className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">Loading shop...</div></section>}>
+      <ShopPageContent />
+    </Suspense>
+  );
+}

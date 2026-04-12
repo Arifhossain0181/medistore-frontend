@@ -6,6 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { getMyOrders } from "@/lib/api/order";
 import { getCustomerDashboardStats, getUserProfile } from "@/lib/api/auth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type DashboardStats = {
   totalOrders: number;
@@ -84,8 +85,15 @@ export default function CustomerDashboardPage() {
   if (loading) {
     return (
       <div className="p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
-        <h1 className="text-3xl font-bold mb-4">Customer Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+        <div className="space-y-4">
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="h-5 w-96" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <Skeleton className="h-28 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -169,6 +177,9 @@ export default function CustomerDashboardPage() {
           <div className="mt-6 space-y-2">
             <Link href="/customer/profile" className="block text-sm text-blue-600 hover:underline">
               Manage profile
+            </Link>
+            <Link href="/dashboard/checkout" className="block text-sm text-blue-600 hover:underline">
+              Go to checkout
             </Link>
             <Link href="/shop" className="block text-sm text-blue-600 hover:underline">
               Continue shopping

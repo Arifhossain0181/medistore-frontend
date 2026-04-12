@@ -19,6 +19,9 @@ export default function RegisterForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const backendBaseUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL?.trim().replace(/\/$/, "") ||
+    "http://localhost:5000";
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -83,7 +86,7 @@ export default function RegisterForm() {
     try {
       const callbackURL = getRedirectURL();
       const res = await axios.post(
-        "/api/auth/sign-in/social",
+        `${backendBaseUrl}/api/auth/sign-in/social`,
         {
           provider: "google",
           callbackURL,

@@ -1,3 +1,5 @@
+"use client";
+
 import { Hero47 } from "@/components/layouts/hero47";
 import CategoryPage from "./category/page";
 import { Products } from "@/components/products";

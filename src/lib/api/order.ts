@@ -89,29 +89,37 @@ export async function createOrder(orderData: {
 // Get customer orders (my orders)
 export async function getMyOrders() {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/orders`, {
-      credentials: "include",
-      cache: "no-cache"
-    });
+    const endpoints = ["/api/orders"];
+    const directBackendEndpoint = `${API_BASE_URL}/api/orders`;
 
-    if (res.ok) {
-      const data = await res.json();
-      return data?.data || data || [];
+    if (API_BASE_URL && directBackendEndpoint !== endpoints[0]) {
+      endpoints.push(directBackendEndpoint);
     }
 
-    // Fallback to local Next.js proxy route if direct backend cookie/context is not accepted.
-    const fallbackRes = await fetch(`/api/orders`, {
-      credentials: "include",
-      cache: "no-cache"
-    });
+    let lastStatus = 0;
+    let lastMessage = "";
 
-    if (!fallbackRes.ok) {
-      const payload = await fallbackRes.json().catch(() => ({}));
-      throw new Error(payload?.message || `Failed to fetch orders: ${fallbackRes.status}`);
+    for (const endpoint of endpoints) {
+      const res = await fetch(endpoint, {
+        credentials: "include",
+        cache: "no-cache"
+      });
+
+      const payload = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        return payload?.data || payload || [];
+      }
+
+      lastStatus = res.status;
+      lastMessage = payload?.message || "";
+
+      if (res.status === 401 || res.status === 403) {
+        continue;
+      }
     }
 
-    const fallbackData = await fallbackRes.json();
-    return fallbackData?.data || fallbackData || [];
+    throw new Error(lastMessage || `Failed to fetch orders: ${lastStatus || 500}`);
   } catch (error) {
     console.error("Error fetching orders:", error);
     throw error;

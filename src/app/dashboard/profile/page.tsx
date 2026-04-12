@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getUserProfile, updateUserProfile } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authstore";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type EditableProfile = {
   name: string;
@@ -96,9 +97,11 @@ export default function DashboardProfilePage() {
         ) : null}
 
         {loading ? (
-          <div className="flex min-h-40 items-center justify-center text-slate-500 dark:text-slate-400">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading profile...
+          <div className="space-y-4">
+            <Skeleton className="h-11 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
+            <Skeleton className="h-11 w-44 rounded-xl" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="grid gap-5 md:grid-cols-2">

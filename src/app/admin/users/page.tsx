@@ -1,9 +1,10 @@
 "use client";
 import { getAlluser, banUser, unbanUser, updateUserRole } from "@/lib/api/medicine";
 import { Button } from "@/nextjs/ui/button";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 type User = {
   id: string;
@@ -19,6 +20,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [changingRole, setChangingRole] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   const loadUsers = async () => {
     try {
@@ -83,14 +86,24 @@ export default function AdminUsersPage() {
     (user) => user.role === "DELIVERY_MAN" && user.status === "PENDING_APPROVAL",
   ).length;
 
+  const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return users.slice(start, start + pageSize);
+  }, [users, page]);
+
+  useEffect(() => {
+    setPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
   const handleApproveDeliveryMan = async (userId: string) => {
     await handleRoleChange(userId, "DELIVERY_MAN");
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Manage Users</h1>
-      <div className="mb-4 text-sm text-gray-600">
+    <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950 md:p-6">
+      <h1 className="mb-6 text-3xl font-bold text-slate-900 dark:text-slate-100">Manage Users</h1>
+      <div className="mb-4 text-sm text-gray-600 dark:text-slate-300">
         <p className="font-semibold mb-2">Total Users: {users.length}</p>
         <p className="text-blue-600">💡 Only admins can change user roles. Delivery Man applications must be approved by admin.</p>
         {pendingDeliveryManCount > 0 ? (
@@ -102,7 +115,7 @@ export default function AdminUsersPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="border rounded-lg p-4 bg-white shadow">
+            <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900">
               <Skeleton className="h-6 w-32 mb-2" />
               <Skeleton className="h-4 w-48 mb-1" />
               <Skeleton className="h-4 w-24 mb-2" />
@@ -113,17 +126,17 @@ export default function AdminUsersPage() {
           ))}
         </div>
       ) : users.length === 0 ? (
-        <div className="p-6 text-gray-500">No users found</div>
+        <div className="p-6 text-gray-500 dark:text-slate-400">No users found</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {users.map((user) => (
-            <div key={user.id} className="border rounded-lg p-4 bg-white shadow">
+          {paginatedUsers.map((user) => (
+            <div key={user.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900">
               <div className="font-bold text-lg mb-2">{user.name}</div>
-              <div className="text-sm text-gray-600 mb-1">{user.email}</div>
+              <div className="mb-1 text-sm text-gray-600 dark:text-slate-400">{user.email}</div>
               
               {/* Role Selector */}
               <div className="mb-3">
-                <label className="text-xs text-gray-500 block mb-1">Role:</label>
+                <label className="mb-1 block text-xs text-gray-500 dark:text-slate-400">Role:</label>
                 <select
                   value={user.role}
                   onChange={(e) =>
@@ -133,7 +146,7 @@ export default function AdminUsersPage() {
                     )
                   }
                   disabled={changingRole === user.id}
-                  className="w-full border rounded px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded border border-slate-300 bg-white px-2 py-1 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 >
                   <option value="CUSTOMER">Customer</option>
                   <option value="SELLER">Seller</option>
@@ -175,6 +188,13 @@ export default function AdminUsersPage() {
           ))}
         </div>
       )}
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        itemLabel={`${users.length} users`}
+      />
     </div>
   );
 }

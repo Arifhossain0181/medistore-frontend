@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   getSuperAdminAdmins,
@@ -9,11 +9,15 @@ import {
   type SuperAdminUser,
 } from "@/lib/api/super-admin";
 import { Button } from "@/nextjs/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function SuperAdminAdminsPage() {
   const [admins, setAdmins] = useState<SuperAdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   const loadAdmins = async () => {
     try {
@@ -57,23 +61,37 @@ export default function SuperAdminAdminsPage() {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(admins.length / pageSize));
+  const paginatedAdmins = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return admins.slice(start, start + pageSize);
+  }, [admins, page]);
+
+  useEffect(() => {
+    setPage((prev) => Math.min(prev, totalPages));
+  }, [totalPages]);
+
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">System Admin Management</h1>
-      <div className="mb-4 font-semibold">Total Admin Accounts: {admins.length}</div>
+    <div className="min-h-screen bg-slate-50 p-4 dark:bg-slate-950 md:p-6">
+      <h1 className="mb-6 text-3xl font-bold text-slate-900 dark:text-slate-100">System Admin Management</h1>
+      <div className="mb-4 font-semibold text-slate-800 dark:text-slate-200">Total Admin Accounts: {admins.length}</div>
 
       {loading ? (
-        <div className="p-6">Loading admins...</div>
+        <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-44 w-full rounded-lg" />
+          <Skeleton className="h-44 w-full rounded-lg" />
+          <Skeleton className="h-44 w-full rounded-lg" />
+        </div>
       ) : admins.length === 0 ? (
-        <div className="p-6 text-gray-500">No admin users found</div>
+        <div className="p-6 text-gray-500 dark:text-slate-400">No admin users found</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {admins.map((admin) => (
-            <div key={admin.id} className="border rounded-lg p-4 bg-white shadow">
-              <div className="font-bold text-lg mb-2">{admin.name}</div>
-              <div className="text-sm text-gray-600 mb-1">{admin.email}</div>
-              <div className="text-sm mb-1">Role: <span className="font-semibold">{admin.role}</span></div>
-              <div className="text-sm mb-3">
+          {paginatedAdmins.map((admin) => (
+            <div key={admin.id} className="rounded-lg border border-slate-200 bg-white p-4 shadow dark:border-slate-700 dark:bg-slate-900">
+              <div className="mb-2 text-lg font-bold text-slate-900 dark:text-slate-100">{admin.name}</div>
+              <div className="mb-1 text-sm text-gray-600 dark:text-slate-400">{admin.email}</div>
+              <div className="mb-1 text-sm text-slate-700 dark:text-slate-300">Role: <span className="font-semibold">{admin.role}</span></div>
+              <div className="mb-3 text-sm">
                 Status:{" "}
                 <span className={admin.isBanned ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}>
                   {admin.isBanned ? "Banned" : "Active"}
@@ -103,6 +121,13 @@ export default function SuperAdminAdminsPage() {
           ))}
         </div>
       )}
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        itemLabel={`${admins.length} admins`}
+      />
     </div>
   );
 }

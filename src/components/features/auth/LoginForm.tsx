@@ -101,7 +101,7 @@ export default function LoginForm() {
 
       const callbackURL = getRedirectURL();
       const res = await axios.post(
-        "/api/auth/sign-in/social",
+        `/api/auth/sign-in/social`,
         {
           provider: "google",
           callbackURL,
@@ -138,6 +138,7 @@ export default function LoginForm() {
       <input
         type="email"
         placeholder="Enter your email"
+        value={email}
         onChange={(e) => setemail(e.target.value)}
         className={fieldClassName}
         required
@@ -145,6 +146,7 @@ export default function LoginForm() {
       <input
         type="password"
         placeholder="Enter your password"
+        value={password}
         onChange={(e) => setpassword(e.target.value)}
         className={fieldClassName}
         required
@@ -157,7 +159,7 @@ export default function LoginForm() {
         className="mt-1 w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_18px_30px_-20px_rgba(4,120,87,0.8)] transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:bg-emerald-600 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={loading}
       >
-        {loading ? "Logging in..." : "Access Dashboard"}
+        {loading ? "Logging in..." : "Login Now"}
       </motion.button>
 
       <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold tracking-[0.22em] text-slate-400 uppercase">

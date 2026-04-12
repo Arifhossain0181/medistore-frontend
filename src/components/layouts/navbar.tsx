@@ -68,8 +68,8 @@ const Navbar = ({
       title: "Services",
       url: "/services",
       children: [
-        { title: "Fast Delivery", url: "/services?focus=delivery" },
-        { title: "Trusted Network", url: "/services?focus=trusted" },
+        { title: "Fast Delivery", url: "/services?focus=delivery#fast-delivery" },
+        { title: "Trusted Network", url: "/services?focus=trusted#trusted-network" },
         { title: "Clinical Chatbot", url: "/chatbot" },
         { title: "Checkout Support", url: "/checkout" },
       ],
@@ -98,6 +98,14 @@ const Navbar = ({
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
   
   // Show extra tools for any logged-in role (customer, delivery, admin, super-admin)
   const menuItems = user
@@ -305,75 +313,96 @@ const Navbar = ({
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -14, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -10, height: 0 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className="mt-2 overflow-hidden rounded-2xl border border-sky-300/25 bg-white/90 px-4 py-4 backdrop-blur-xl lg:hidden dark:border-slate-700/70 dark:bg-slate-900/88"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[2px] lg:hidden"
+              onClick={() => setMobileOpen(false)}
             >
-              <div className="flex flex-col gap-1.5">
-                {menuItems.map((item) => {
-                  const active = isActive(item.url);
-                  return (
-                    <div key={item.title}>
-                      <Link
-                        href={item.url}
-                        onClick={(e) => handleNavigation(e, item.url)}
-                        className={cn(
-                          "rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors",
-                          active
-                            ? "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
-                            : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
-                        )}
-                      >
-                        {item.title}
-                      </Link>
-                      {item.children?.length ? (
-                        <div className="ml-3 mt-1 flex flex-col">
-                          {item.children.map((child, idx) => (
-                            <Link
-                              key={`${child.url}-${child.title}-${idx}`}
-                              href={child.url}
-                              onClick={(e) => handleNavigation(e, child.url)}
-                              className="rounded-lg px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                            >
-                              {child.title}
-                            </Link>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
+              <motion.aside
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-0 right-0 h-full w-[86vw] max-w-[360px] overflow-y-auto border-l border-sky-300/25 bg-white/95 px-4 py-5 shadow-2xl dark:border-slate-700/70 dark:bg-slate-900/95"
+              >
+                <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Menu</span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md border border-slate-300/80 bg-white/75 p-1.5 text-slate-700 dark:border-slate-700 dark:bg-slate-900/75 dark:text-slate-200"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
 
-              <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
-                {user ? (
-                  <>
-                    <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Welcome, {user.name}</div>
-                    <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
-                      <Link href="/dashboard">Profile</Link>
-                    </Button>
-                    <Button onClick={handleLogout} variant="outline" className="border-slate-300 dark:border-slate-700">
-                      <LogOut className="mr-2 size-4" />
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
-                      <Link href={loginUrl}>{auth.login.title}</Link>
-                    </Button>
-                    <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
-                      <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                    </Button>
-                  </>
-                )}
-                <Button onClick={toggleTheme} variant="outline" className="border-slate-300 dark:border-slate-700">
-                  <SunMoon className="mr-2 size-4" />
-                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
-                </Button>
-              </div>
+                <div className="flex flex-col gap-1.5">
+                  {menuItems.map((item) => {
+                    const active = isActive(item.url);
+                    return (
+                      <div key={item.title}>
+                        <Link
+                          href={item.url}
+                          onClick={(e) => handleNavigation(e, item.url)}
+                          className={cn(
+                            "rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors",
+                            active
+                              ? "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
+                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800",
+                          )}
+                        >
+                          {item.title}
+                        </Link>
+                        {item.children?.length ? (
+                          <div className="ml-3 mt-1 flex flex-col">
+                            {item.children.map((child, idx) => (
+                              <Link
+                                key={`${child.url}-${child.title}-${idx}`}
+                                href={child.url}
+                                onClick={(e) => handleNavigation(e, child.url)}
+                                className="rounded-lg px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                              >
+                                {child.title}
+                              </Link>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
+                  {user ? (
+                    <>
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Welcome, {user.name}</div>
+                      <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
+                        <Link href="/dashboard">Profile</Link>
+                      </Button>
+                      <Button onClick={handleLogout} variant="outline" className="border-slate-300 dark:border-slate-700">
+                        <LogOut className="mr-2 size-4" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
+                        <Link href={loginUrl}>{auth.login.title}</Link>
+                      </Button>
+                      <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
+                        <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                      </Button>
+                    </>
+                  )}
+                  <Button onClick={toggleTheme} variant="outline" className="border-slate-300 dark:border-slate-700">
+                    <SunMoon className="mr-2 size-4" />
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                  </Button>
+                </div>
+              </motion.aside>
             </motion.div>
           )}
         </AnimatePresence>

@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/authstore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Category {
   id: string;
@@ -112,10 +113,11 @@ export default function AddPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
-      <h1 className="text-2xl font-bold mb-6">Add Medicine</h1>
+    <div className="min-h-screen bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-slate-100 md:p-6">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-6">
+        <h1 className="mb-6 text-2xl font-bold md:text-3xl">Add Medicine</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
         {/* Medicine Name */}
         <div>
           <Label className="text-gray-900 dark:text-white">Medicine Name</Label>
@@ -152,18 +154,18 @@ export default function AddPage() {
         </div>
 
         {/* Price */}
-        <div>
-          <Label className="text-gray-900 dark:text-white">Price</Label>
-          <Input name="price" type="number" step="0.01" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label className="text-gray-900 dark:text-white">Price</Label>
+            <Input name="price" type="number" step="0.01" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
+          </div>
+
+          <div>
+            <Label className="text-gray-900 dark:text-white">Stock</Label>
+            <Input name="stock" type="number" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
+          </div>
         </div>
 
-        {/* Stock */}
-        <div>
-          <Label className="text-gray-900 dark:text-white">Stock</Label>
-          <Input name="stock" type="number" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
-        </div>
-
-        {/* Manufacturer */}
         <div>
           <Label className="text-gray-900 dark:text-white">Manufacturer</Label>
           <Input name="manufacturer" required className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600" />
@@ -173,7 +175,10 @@ export default function AddPage() {
         <div>
           <Label htmlFor="categoryId" className="text-gray-900 dark:text-white">Category</Label>
           {loadingCategories ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading categories...</p>
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
           ) : (
             <select
               id="categoryId"
@@ -198,7 +203,7 @@ export default function AddPage() {
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button type="submit" disabled={loading} className="bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white">
             {loading ? "Adding..." : "Add Medicine"}
           </Button>
@@ -206,7 +211,8 @@ export default function AddPage() {
             Cancel
           </Button>
         </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

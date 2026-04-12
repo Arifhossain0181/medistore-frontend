@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type User = {
   id: string;
@@ -25,7 +26,13 @@ export default function AdminUserStatusPage() {
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded shadow">
       <h1 className="text-2xl font-bold mb-6">User Status</h1>
-      {loading ? <p>Loading...</p> : (
+      {loading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <Skeleton className="h-20 w-full rounded-lg" />
+        </div>
+      ) : (
         <ul className="space-y-4">
           {users.map((user) => (
             <li key={user.id} className="border p-4 rounded">
