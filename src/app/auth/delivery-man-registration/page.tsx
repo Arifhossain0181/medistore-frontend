@@ -1,42 +1,50 @@
+"use client";
+
 import DeliveryManApplicationForm from "@/components/features/auth/DeliveryManApplicationForm";
+import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function DeliveryManRegistrationPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-100 px-4 py-16 dark:bg-slate-950 md:py-20">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-16 left-0 h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl dark:bg-cyan-900/35" />
-        <div className="absolute right-0 bottom-0 h-80 w-80 rounded-full bg-emerald-300/25 blur-3xl dark:bg-emerald-900/35" />
-      </div>
+    <main className="relative flex min-h-screen items-start justify-center overflow-hidden bg-slate-100 px-4 pt-24 pb-8 dark:bg-slate-950 md:pt-28 md:pb-10">
+      <Image
+        src="/hero-bg.jpg"
+        alt="Medical background"
+        fill
+        priority
+        className="object-cover opacity-45 dark:opacity-25"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-cyan-100/70 via-white/72 to-emerald-100/70 backdrop-blur-[2px] dark:from-slate-950/88 dark:via-slate-900/84 dark:to-cyan-950/66" />
 
-      <div className="relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 shadow-[0_50px_115px_-56px_rgba(15,23,42,0.7)] backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_60px_135px_-60px_rgba(15,23,42,0.74)] xl:grid-cols-[1fr_1.3fr] dark:border-slate-700 dark:bg-slate-900/70">
-        <section className="border-b border-slate-200/70 bg-linear-to-b from-cyan-100/70 to-slate-100/70 p-8 transition-colors duration-300 xl:border-r xl:border-b-0 dark:border-slate-700 dark:from-cyan-950/35 dark:to-slate-900/35 md:p-10">
-          <p className="text-xs font-semibold tracking-[0.24em] text-cyan-700 uppercase dark:text-cyan-300">Medistore</p>
-          <h1 className="mt-5 text-4xl font-bold leading-tight text-slate-900 dark:text-slate-100">
-            Delivery Team
-            <span className="block text-cyan-600 dark:text-cyan-300">Application Portal</span>
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Submit your profile, vehicle and area details. Admin will review your request and update status.
-          </p>
-        </section>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="relative mt-1 w-full max-w-3xl rounded-[1.8rem] border border-slate-200/85 bg-white/90 p-5 shadow-[0_32px_78px_-45px_rgba(15,23,42,0.66)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/78 md:mt-2 md:p-6"
+      >
+        <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/45 dark:text-emerald-300">
+          <span className="text-lg">❤</span>
+        </div>
+        <h1 className="text-center text-3xl font-bold tracking-tight text-emerald-700 dark:text-emerald-300">Delivery Application</h1>
+        <p className="mt-1 text-center text-sm text-slate-600 dark:text-slate-300">Apply to join our delivery team with verified details.</p>
 
-        <section className="p-8 md:p-10 lg:p-12">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Delivery Man Registration</h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Fill all required information. After submit, admin will approve or reject your application.
-          </p>
-          <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-5 shadow-[0_20px_45px_-32px_rgba(15,23,42,0.45)] transition-all duration-300 hover:border-cyan-300/70 hover:shadow-[0_30px_60px_-36px_rgba(14,116,144,0.45)] dark:border-slate-700/70 dark:bg-slate-900/45 dark:hover:border-cyan-800/80">
+        <section className="mt-4">
+          <motion.div
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.25 }}
+            className="rounded-2xl border border-slate-200/85 bg-white/80 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.48)] dark:border-slate-700/75 dark:bg-slate-900/52"
+          >
             <DeliveryManApplicationForm />
-          </div>
-          <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-300">
+          </motion.div>
+          <p className="mt-3 text-center text-sm text-slate-600 dark:text-slate-300">
             Want normal account?{" "}
             <Link href="/signup" className="font-semibold text-cyan-700 hover:underline dark:text-cyan-300">
               Go to user registration
             </Link>
           </p>
         </section>
-      </div>
+      </motion.div>
     </main>
   );
 }

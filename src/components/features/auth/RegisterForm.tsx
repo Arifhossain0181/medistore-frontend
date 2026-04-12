@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import Link from "next/link";
 import { Chrome } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function RegisterForm() {
   const formSchema = z.object({
@@ -113,32 +114,35 @@ export default function RegisterForm() {
     await registerUser();
   };
 
+  const fieldClassName =
+    "w-full rounded-xl border border-slate-300/80 bg-white/90 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-600/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-600 dark:focus:ring-emerald-900/40";
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input
         name="name"
-        placeholder="Name"
+        placeholder="Full name"
         value={form.name}
         onChange={handleChange}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+        className={fieldClassName}
         required
       />
       <input
         name="email"
         type="email"
-        placeholder="Email"
+        placeholder="Email address"
         value={form.email}
         onChange={handleChange}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+        className={fieldClassName}
         required
       />
       <input
         name="phone"
         type="tel"
-        placeholder="Phone Number (Optional)"
+        placeholder="Phone number (optional)"
         value={form.phone}
         onChange={handleChange}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+        className={fieldClassName}
       />
       <input
         name="password"
@@ -146,33 +150,45 @@ export default function RegisterForm() {
         placeholder="Password"
         value={form.password}
         onChange={handleChange}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+        className={fieldClassName}
         required
       />
-      <button type="submit" className="w-full bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 mt-2" disabled={loading}>
+
+      <motion.button
+        whileHover={{ y: -1, scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        type="submit"
+        className="mt-1 w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_18px_30px_-20px_rgba(4,120,87,0.8)] transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:bg-emerald-600 dark:hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={loading}
+      >
         {loading ? "Registering..." : "Register"}
-      </button>
-      <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-gray-400">
-        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
-        <span>or</span>
-        <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+      </motion.button>
+
+      <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        <span>Continue With</span>
+        <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
       </div>
-      <button
+
+      <motion.button
+        whileHover={{ y: -1 }}
+        whileTap={{ scale: 0.99 }}
         type="button"
         onClick={handleGoogleRegister}
-        className="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300/85 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_14px_28px_-22px_rgba(15,23,42,0.6)] transition hover:border-cyan-300 hover:bg-cyan-50/70 focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600/80 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:border-cyan-800 dark:hover:bg-cyan-950/25"
         disabled={loading || googleLoading}
       >
         <Chrome className="h-4 w-4" />
         {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
-      </button>
+      </motion.button>
+
       <Link
         href="/auth/delivery-man-registration"
-        className="block w-full rounded-md bg-emerald-600 py-2 px-4 text-center text-white hover:bg-emerald-700"
+        className="mt-1 block w-full rounded-xl border border-emerald-300/80 bg-emerald-50 py-2.5 px-4 text-center text-sm font-semibold text-emerald-700 shadow-[0_14px_28px_-22px_rgba(5,150,105,0.6)] transition hover:bg-emerald-100 dark:border-emerald-800/80 dark:bg-emerald-900/25 dark:text-emerald-300 dark:hover:bg-emerald-900/40"
       >
         Apply To Be A Delivery Man
       </Link>
-      <p className="text-xs text-gray-500">Delivery Man application এ admin approve/reject flow থাকবে.</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">Delivery application will be reviewed by admin.</p>
     </form>
   );
 }

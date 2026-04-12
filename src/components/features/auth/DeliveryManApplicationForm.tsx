@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { DELIVERY_AREAS, VEHICLE_OPTIONS } from "@/lib/delivery-areas";
+import { motion } from "framer-motion";
 
 type DeliveryManApplicationFormValues = {
   name: string;
@@ -100,15 +101,18 @@ export default function DeliveryManApplicationForm() {
     }
   };
 
+  const fieldClassName =
+    "w-full rounded-xl border border-slate-300/80 bg-white/90 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-600/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-600 dark:focus:ring-emerald-900/40";
+
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3">
-      <input name="name" placeholder="Full Name" value={form.name} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <input name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <input name="password" type="password" placeholder="Password (min 6)" value={form.password} onChange={onChange} className="w-full rounded border px-3 py-2" minLength={6} required />
-      <input name="phone" placeholder="Phone Number" value={form.phone} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <input name="nidNumber" placeholder="NID Number" value={form.nidNumber} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <input name="licenseNumber" placeholder="Driving License Number" value={form.licenseNumber} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <select name="vehicleType" value={form.vehicleType} onChange={onChange} className="w-full rounded border px-3 py-2" required>
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <input name="name" placeholder="Full Name" value={form.name} onChange={onChange} className={fieldClassName} required />
+      <input name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} className={fieldClassName} required />
+      <input name="password" type="password" placeholder="Password (min 6)" value={form.password} onChange={onChange} className={fieldClassName} minLength={6} required />
+      <input name="phone" placeholder="Phone Number" value={form.phone} onChange={onChange} className={fieldClassName} required />
+      <input name="nidNumber" placeholder="NID Number" value={form.nidNumber} onChange={onChange} className={fieldClassName} required />
+      <input name="licenseNumber" placeholder="Driving License Number" value={form.licenseNumber} onChange={onChange} className={fieldClassName} required />
+      <select name="vehicleType" value={form.vehicleType} onChange={onChange} className={fieldClassName} required>
         <option value="">Select Vehicle Type</option>
         {VEHICLE_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -116,10 +120,10 @@ export default function DeliveryManApplicationForm() {
           </option>
         ))}
       </select>
-      <input name="vehicleRegistrationNo" placeholder="Vehicle Registration Number" value={form.vehicleRegistrationNo} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <div className="grid grid-cols-1 gap-3 rounded border p-3">
-        <p className="text-sm font-medium text-gray-700">Preferred Delivery Area</p>
-        <select value={division} onChange={onDivisionChange} className="w-full rounded border px-3 py-2" required>
+      <input name="vehicleRegistrationNo" placeholder="Vehicle Registration Number" value={form.vehicleRegistrationNo} onChange={onChange} className={fieldClassName} required />
+      <div className="grid grid-cols-1 gap-3 rounded-xl border border-slate-300/80 bg-slate-50/80 p-3 md:col-span-2 dark:border-slate-700/80 dark:bg-slate-900/40">
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Preferred Delivery Area</p>
+        <select value={division} onChange={onDivisionChange} className={fieldClassName} required>
           <option value="">Select Division</option>
           {DELIVERY_AREAS.map((area) => (
             <option key={area.value} value={area.value}>
@@ -127,7 +131,7 @@ export default function DeliveryManApplicationForm() {
             </option>
           ))}
         </select>
-        <select value={district} onChange={onDistrictChange} className="w-full rounded border px-3 py-2" required disabled={!division}>
+        <select value={district} onChange={onDistrictChange} className={fieldClassName} required disabled={!division}>
           <option value="">Select District</option>
           {districtOptions.map((item) => (
             <option key={item.value} value={item.value}>
@@ -135,7 +139,7 @@ export default function DeliveryManApplicationForm() {
             </option>
           ))}
         </select>
-        <select value={thana} onChange={onThanaChange} className="w-full rounded border px-3 py-2" required disabled={!district}>
+        <select value={thana} onChange={onThanaChange} className={fieldClassName} required disabled={!district}>
           <option value="">Select Thana</option>
           {thanaOptions.map((item) => (
             <option key={item.value} value={item.value}>
@@ -144,17 +148,19 @@ export default function DeliveryManApplicationForm() {
           ))}
         </select>
       </div>
-      <textarea name="currentAddress" placeholder="Current Address" value={form.currentAddress} onChange={onChange} className="w-full rounded border px-3 py-2" rows={3} required />
-      <input name="emergencyContactName" placeholder="Emergency Contact Name" value={form.emergencyContactName} onChange={onChange} className="w-full rounded border px-3 py-2" required />
-      <input name="emergencyContactPhone" placeholder="Emergency Contact Phone" value={form.emergencyContactPhone} onChange={onChange} className="w-full rounded border px-3 py-2" required />
+      <textarea name="currentAddress" placeholder="Current Address" value={form.currentAddress} onChange={onChange} className={`${fieldClassName} md:col-span-2`} rows={3} required />
+      <input name="emergencyContactName" placeholder="Emergency Contact Name" value={form.emergencyContactName} onChange={onChange} className={fieldClassName} required />
+      <input name="emergencyContactPhone" placeholder="Emergency Contact Phone" value={form.emergencyContactPhone} onChange={onChange} className={fieldClassName} required />
 
-      <button
+      <motion.button
+        whileHover={{ y: -1, scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
         type="submit"
         disabled={loading}
-        className="mt-2 w-full rounded bg-emerald-600 py-2 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="mt-1 w-full rounded-xl bg-emerald-700 py-2.5 text-sm font-semibold text-white shadow-[0_18px_30px_-20px_rgba(4,120,87,0.8)] transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60 md:col-span-2"
       >
         {loading ? "Submitting..." : "Submit Delivery Man Application"}
-      </button>
+      </motion.button>
     </form>
   );
 }
