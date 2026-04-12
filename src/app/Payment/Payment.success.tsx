@@ -47,7 +47,7 @@ export default function PaymentSuccess() {
         if (pendingRaw) {
           const pendingOrderData = JSON.parse(pendingRaw) as PendingOrderData;
           try {
-            await createOrder(pendingOrderData);
+             await createOrder({ ...pendingOrderData, stripeSessionId: sessionId });
             clearCart();
             sessionStorage.removeItem('pendingOrderData');
           } catch (orderErr: any) {

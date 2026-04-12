@@ -63,6 +63,7 @@ export async function createOrder(orderData: {
   division: string;
   district: string;
   thana: string;
+ stripeSessionId?: string;
 }) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
