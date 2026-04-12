@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
-import { Chrome } from "lucide-react";
+import { Chrome, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginForm() {
@@ -130,6 +130,48 @@ export default function LoginForm() {
     }
   };
 
+  const handleDemoLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setemail("arif1@gmail.com");
+    setpassword("0123456admin");
+    setLoading(true);
+    
+    try {
+      const res = await axios.post(
+        `/api/auth/login`,
+        { email: "arif1@gmail.com", password: "0123456admin" },
+        { withCredentials: true }
+      );
+      
+      if (res.data && res.data.user) {
+        const user = res.data.user;
+        
+        const userData = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: (user.role || 'CUSTOMER') as 'ADMIN' | 'SELLER' | 'CUSTOMER' | 'SUPER_ADMIN' | 'DELIVERY_MAN',
+        };
+        
+        localStorage.removeItem('medistore-auth');
+        
+        setUser(userData);
+        setUserId(userData.id);
+        
+        toast.success("Demo login successful!");
+        router.push("/");
+      }
+    } catch (err: unknown) {
+      console.error("Demo login error:", err);
+      const errorMessage = axios.isAxiosError(err) 
+        ? err.response?.data?.message || err.message 
+        : "Something went wrong";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fieldClassName =
     "w-full rounded-xl border border-slate-300/80 bg-white/90 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.45)] transition focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 dark:border-slate-600/80 dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-emerald-600 dark:focus:ring-emerald-900/40";
 
@@ -178,6 +220,18 @@ export default function LoginForm() {
       >
         <Chrome className="h-4 w-4" />
         {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+      </motion.button>
+
+      <motion.button
+        whileHover={{ y: -1, scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        type="button"
+        onClick={handleDemoLogin}
+        className="mt-2 w-full rounded-xl border border-slate-400/60 bg-slate-100/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_8px_16px_-16px_rgba(51,65,85,0.3)] transition hover:border-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
+        disabled={loading || googleLoading}
+      >
+        <Zap className="mr-2 inline h-4 w-4" />
+        Demo Customer Login
       </motion.button>
     </form>
   );
